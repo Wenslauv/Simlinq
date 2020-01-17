@@ -4,8 +4,6 @@
 //Applies an accumulator function over a sequence. The specified seed value is used as the initial accumulator value.
 //Aggregate<TSource>(IEnumerable<TSource>, Func<TSource,TSource,TSource>)
 //Applies an accumulator function over a sequence.
-//All<TSource>(IEnumerable<TSource>, Func<TSource,Boolean>)
-//Determines whether all elements of a sequence satisfy a condition.
 //Append<TSource>(IEnumerable<TSource>, TSource)
 //Appends a value to the end of the sequence.
 //AsEnumerable<TSource>(IEnumerable<TSource>)
@@ -345,6 +343,17 @@ namespace containers {
         }
     }
     
+    
+    template<typename T, typename unary_predicate>
+    bool all(const T& container, unary_predicate&& condition) {
+        for (auto it = std::begin(container); it != std::end(container); ++it) {
+            if (not condition(*it))
+                return false;
+        }
+        return true;
+    }
+    
+    
     template<typename container>
     bool any(const container& c) {
         return std::begin(c) != std::end(c);
@@ -358,6 +367,8 @@ namespace containers {
         }
         return false;
     }
+    
+    
     
     template<typename container>
     const auto& max(const container& c) {
