@@ -6,10 +6,6 @@
 //Applies an accumulator function over a sequence.
 //All<TSource>(IEnumerable<TSource>, Func<TSource,Boolean>)
 //Determines whether all elements of a sequence satisfy a condition.
-//Any<TSource>(IEnumerable<TSource>)
-//Determines whether a sequence contains any elements.
-//Any<TSource>(IEnumerable<TSource>, Func<TSource,Boolean>)
-//Determines whether any element of a sequence satisfies a condition.
 //Append<TSource>(IEnumerable<TSource>, TSource)
 //Appends a value to the end of the sequence.
 //AsEnumerable<TSource>(IEnumerable<TSource>)
@@ -134,8 +130,6 @@
 //Returns an Int64 that represents how many elements in a sequence satisfy a condition.
 //Max<TSource,TResult>(IEnumerable<TSource>, Func<TSource,TResult>)
 //Invokes a transform function on each element of a generic sequence and returns the maximum resulting value.
-//Max<TSource>(IEnumerable<TSource>)
-//Returns the maximum value in a generic sequence.
 //Max<TSource>(IEnumerable<TSource>, Func<TSource,Decimal>)
 //Invokes a transform function on each element of a sequence and returns the maximum Decimal value.
 //Max<TSource>(IEnumerable<TSource>, Func<TSource,Double>)
@@ -342,7 +336,6 @@
 namespace containers {
     
     namespace detail {
-        
         template<typename iter>
         const auto& max(const iter& begin, const iter& end) {
             if (begin == end)
@@ -350,7 +343,20 @@ namespace containers {
             return *std::max_element(begin, end);
             
         }
-        
+    }
+    
+    template<typename container>
+    bool any(const container& c) {
+        return std::begin(c) != std::end(c);
+    }
+    
+    template<typename container, typename unary_predicate>
+    bool any(const container& c, unary_predicate&& condition ) {
+        for (auto it = std::begin(c); it != std::end(c); ++it) {
+            if (condition(*it))
+                return true;
+        }
+        return false;
     }
     
     template<typename container>
@@ -358,4 +364,6 @@ namespace containers {
         return detail::max(std::begin(c),
                            std::end(c));
     }
+    
+    
 }
