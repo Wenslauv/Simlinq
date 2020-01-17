@@ -52,10 +52,6 @@
 //Casts the elements of an IEnumerable to the specified type.
 //Concat<TSource>(IEnumerable<TSource>, IEnumerable<TSource>)
 //Concatenates two sequences.
-//Contains<TSource>(IEnumerable<TSource>, TSource)
-//Determines whether a sequence contains a specified element by using the default equality comparer.
-//Contains<TSource>(IEnumerable<TSource>, TSource, IEqualityComparer<TSource>)
-//Determines whether a sequence contains a specified element by using a specified IEqualityComparer<T>.
 //Count<TSource>(IEnumerable<TSource>)
 //Returns the number of elements in a sequence.
 //Count<TSource>(IEnumerable<TSource>, Func<TSource,Boolean>)
@@ -331,7 +327,7 @@
 
 
 
-namespace containers {
+namespace simlinq {
     
     namespace detail {
         template<typename iter>
@@ -359,6 +355,7 @@ namespace containers {
         return std::begin(c) != std::end(c);
     }
     
+    
     template<typename container, typename unary_predicate>
     bool any(const container& c, unary_predicate&& condition ) {
         for (auto it = std::begin(c); it != std::end(c); ++it) {
@@ -368,6 +365,23 @@ namespace containers {
         return false;
     }
     
+    
+    template<typename C, typename T>
+    bool contains(const C& container, const T&& elem) {
+        return std::find(std::begin(container),
+                         std::end(container),
+                         elem) != std::end(container);
+    }
+    
+    
+    template<typename C, typename T, typename binary_predicate>
+    bool contains(const C& container, const T&& elem, binary_predicate&& predicate) {
+        for (auto it = std::begin(container); it != std::end(container); ++it) {
+            if (predicate(*it, elem)) return true;
+        }
+        
+        return false;
+    }
     
     
     template<typename container>
