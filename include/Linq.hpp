@@ -52,10 +52,6 @@
 //Casts the elements of an IEnumerable to the specified type.
 //Concat<TSource>(IEnumerable<TSource>, IEnumerable<TSource>)
 //Concatenates two sequences.
-//Count<TSource>(IEnumerable<TSource>)
-//Returns the number of elements in a sequence.
-//Count<TSource>(IEnumerable<TSource>, Func<TSource,Boolean>)
-//Returns a number that represents how many elements in the specified sequence satisfy a condition.
 //DefaultIfEmpty<TSource>(IEnumerable<TSource>)
 //Returns the elements of the specified sequence or the type parameter's default value in a singleton collection if the sequence is empty.
 //DefaultIfEmpty<TSource>(IEnumerable<TSource>, TSource)
@@ -383,6 +379,19 @@ namespace simlinq {
         return false;
     }
     
+    
+    template<typename C>
+    auto count(const C& container) {
+        return std::distance(std::begin(container), std::end(container));
+    }
+    
+    
+    template<typename C, typename unary_predicate>
+    auto count(const C& container, unary_predicate&& predicate) {
+        return std::count_if(std::begin(container),
+                             std::end(container),
+                             predicate);
+    }
     
     template<typename container>
     const auto& max(const container& c) {
