@@ -196,10 +196,6 @@
 //Sorts the elements of a sequence in descending order by using a specified comparer.
 //Prepend<TSource>(IEnumerable<TSource>, TSource)
 //Adds a value to the beginning of the sequence.
-//Range(Int32, Int32)
-//Generates a sequence of integral numbers within a specified range.
-//Repeat<TResult>(TResult, Int32)
-//Generates a sequence that contains one repeated value.
 //Reverse<TSource>(IEnumerable<TSource>)
 //Inverts the order of the elements in a sequence.
 //Select<TSource,TResult>(IEnumerable<TSource>, Func<TSource,Int32,TResult>)
@@ -321,6 +317,8 @@
 //Zip<TFirst,TSecond,TResult>(IEnumerable<TFirst>, IEnumerable<TSecond>, Func<TFirst,TSecond,TResult>)
 //Applies a specified function to the corresponding elements of two sequences, producing a sequence of the results.
 
+#include <numeric>
+
 
 
 namespace simlinq {
@@ -393,11 +391,26 @@ namespace simlinq {
                              predicate);
     }
     
+    
+    
     template<typename container>
     const auto& max(const container& c) {
         return detail::max(std::begin(c),
                            std::end(c));
     }
+
     
     
+    template<typename container, typename T>
+    auto range(T&& value, uint32_t count) {
+        container c(count);
+        std::iota(std::begin(c), std::end(c), value);
+        return c;
+    }
+    
+    
+    template<typename Container, typename T>
+    Container repeat(T&& value, uint32_t count) {
+        return Container(count, value);
+    }
 }
