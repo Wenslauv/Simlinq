@@ -198,10 +198,8 @@
 //Adds a value to the beginning of the sequence.
 //Reverse<TSource>(IEnumerable<TSource>)
 //Inverts the order of the elements in a sequence.
-//Select<TSource,TResult>(IEnumerable<TSource>, Func<TSource,Int32,TResult>)
-//Projects each element of a sequence into a new form by incorporating the element's index.
-//Select<TSource,TResult>(IEnumerable<TSource>, Func<TSource,TResult>)
-//Projects each element of a sequence into a new form.
+
+
 //SelectMany<TSource,TCollection,TResult>(IEnumerable<TSource>, Func<TSource,IEnumerable<TCollection>>, Func<TSource,TCollection,TResult>)
 //Projects each element of a sequence to an IEnumerable<T>, flattens the resulting sequences into one sequence, and invokes a result selector function on each element therein.
 //SelectMany<TSource,TCollection,TResult>(IEnumerable<TSource>, Func<TSource,Int32,IEnumerable<TCollection>>, Func<TSource,TCollection,TResult>)
@@ -399,6 +397,32 @@ namespace simlinq {
                            std::end(c));
     }
 
+    
+    /*
+        Projects each element of a sequence into a new form by incorporating the element's index.
+     */
+    template<template<typename, typename> class RetType, typename Container, typename TInd = uint32_t>
+    auto select(Container& c) {
+        using pair = std::pair<TInd, typename Container::value_type>;
+        RetType<pair, std::allocator<pair>> result(c.size());
+        
+        for (TInd i = 0; i < std::size(c); ++i) {
+            result[i] = pair{i, c[i]};
+        }
+        return result;
+    }
+
+    /*
+        Projects each element of a sequence into a new form.
+     */
+    template<template<typename, typename> class RetType, typename Container, typename Func>
+    auto select(Container& c, Func&& f) {
+        RetType<typename Container::value_type, std::allocator<typename Container::value_type>> result(std::size(c));
+        
+        std::transform(std::begin(c), std::end(c), result.begin(), f);
+        
+        return result;
+    }
     
     
     template<typename container, typename T>
