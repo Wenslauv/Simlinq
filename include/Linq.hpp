@@ -198,8 +198,6 @@
 //Adds a value to the beginning of the sequence.
 //Reverse<TSource>(IEnumerable<TSource>)
 //Inverts the order of the elements in a sequence.
-
-
 //SelectMany<TSource,TCollection,TResult>(IEnumerable<TSource>, Func<TSource,IEnumerable<TCollection>>, Func<TSource,TCollection,TResult>)
 //Projects each element of a sequence to an IEnumerable<T>, flattens the resulting sequences into one sequence, and invokes a result selector function on each element therein.
 //SelectMany<TSource,TCollection,TResult>(IEnumerable<TSource>, Func<TSource,Int32,IEnumerable<TCollection>>, Func<TSource,TCollection,TResult>)
@@ -208,10 +206,6 @@
 //Projects each element of a sequence to an IEnumerable<T> and flattens the resulting sequences into one sequence.
 //SelectMany<TSource,TResult>(IEnumerable<TSource>, Func<TSource,Int32,IEnumerable<TResult>>)
 //Projects each element of a sequence to an IEnumerable<T>, and flattens the resulting sequences into one sequence. The index of each source element is used in the projected form of that element.
-//SequenceEqual<TSource>(IEnumerable<TSource>, IEnumerable<TSource>)
-//Determines whether two sequences are equal by comparing the elements by using the default equality comparer for their type.
-//SequenceEqual<TSource>(IEnumerable<TSource>, IEnumerable<TSource>, IEqualityComparer<TSource>)
-//Determines whether two sequences are equal by comparing their elements by using a specified IEqualityComparer<T>.
 //Single<TSource>(IEnumerable<TSource>)
 //Returns the only element of a sequence, and throws an exception if there is not exactly one element in the sequence.
 //Single<TSource>(IEnumerable<TSource>, Func<TSource,Boolean>)
@@ -417,11 +411,31 @@ namespace simlinq {
      */
     template<template<typename, typename> class RetType, typename Container, typename Func>
     auto select(Container& c, Func&& f) {
-        RetType<typename Container::value_type, std::allocator<typename Container::value_type>> result(std::size(c));
+        RetType<typename Container::value_type, std::allocator<typename Container::value_type>> result(c);
         
         std::transform(std::begin(c), std::end(c), result.begin(), f);
         
         return result;
+    }
+
+    /*
+        Determines whether two sequences are equal by comparing the elements by using the default equality comparer for their type.
+     */
+    template<typename Container>
+    bool sequenceEqual(const Container& c1, const Container& c2) {
+        return std::size(c1) == std::size(c2)
+            ? std::equal(std::begin(c1), std::end(c1), std::begin(c2))
+            : false;
+    }
+    
+    /*
+        Determines whether two sequences are equal by comparing their elements by using a specified IEqualityComparer<T>
+     */
+    template<typename Container, typename comparator>
+    bool sequenceEqual(const Container& c1, const Container& c2, comparator&& comp) {
+        return std::size(c1) == std::size(c2)
+            ? std::equal(std::begin(c1), std::end(c1), std::begin(c2), comp)
+            : false;
     }
     
     
