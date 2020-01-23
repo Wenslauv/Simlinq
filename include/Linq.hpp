@@ -50,8 +50,7 @@
 //Computes the average of a sequence of Single values that are obtained by invoking a transform function on each element of the input sequence.
 //Cast<TResult>(IEnumerable)
 //Casts the elements of an IEnumerable to the specified type.
-//Concat<TSource>(IEnumerable<TSource>, IEnumerable<TSource>)
-//Concatenates two sequences.
+
 //DefaultIfEmpty<TSource>(IEnumerable<TSource>)
 //Returns the elements of the specified sequence or the type parameter's default value in a singleton collection if the sequence is empty.
 //DefaultIfEmpty<TSource>(IEnumerable<TSource>, TSource)
@@ -64,12 +63,7 @@
 //Returns the element at a specified index in a sequence.
 //ElementAtOrDefault<TSource>(IEnumerable<TSource>, Int32)
 //Returns the element at a specified index in a sequence or a default value if the index is out of range.
-//Empty<TResult>()
-//Returns an empty IEnumerable<T> that has the specified type argument.
-//Except<TSource>(IEnumerable<TSource>, IEnumerable<TSource>)
-//Produces the set difference of two sequences by using the default equality comparer to compare values.
-//Except<TSource>(IEnumerable<TSource>, IEnumerable<TSource>, IEqualityComparer<TSource>)
-//Produces the set difference of two sequences by using the specified IEqualityComparer<T> to compare values.
+
 //First<TSource>(IEnumerable<TSource>)
 //Returns the first element of a sequence.
 //First<TSource>(IEnumerable<TSource>, Func<TSource,Boolean>)
@@ -307,6 +301,7 @@
 //Zip<TFirst,TSecond,TResult>(IEnumerable<TFirst>, IEnumerable<TSecond>, Func<TFirst,TSecond,TResult>)
 //Applies a specified function to the corresponding elements of two sequences, producing a sequence of the results.
 
+#include <algorithm>
 #include <numeric>
 
 
@@ -360,6 +355,21 @@ namespace simlinq {
     
     
     /*
+        Concatenates two sequences.
+    */
+    template<typename container>
+    auto concat(const container& first, const container& second) {
+        container result(std::size(first) + std::size(second));
+        
+        std::copy(std::begin(second),
+                  std::end(second),
+                  std::copy(std::begin(first),
+                            std::end(first),
+                            std::begin(result)));
+        return result;
+    }
+    
+    /*
         Determines whether any element of a sequence satisfies a condition.
      */
     template<typename container, typename T>
@@ -400,6 +410,51 @@ namespace simlinq {
         return std::count_if(std::begin(src),
                              std::end(src),
                              condition);
+    }
+    
+    
+    /*
+        Returns an empty IEnumerable<T> that has the specified type argument.
+     */
+    template<typename T>
+    auto empty() {
+        return T{};
+    }
+    
+    
+    /*
+        Produces the set difference of two sequences by using the default equality comparer to compare values.
+     */
+    template<typename container>
+    auto except(const container& first, const container& second) {
+        container result;
+        std::copy_if(std::begin(first),
+                     std::end(first),
+                     std::back_inserter(result),
+                     [&second](const typename container::value_type& value) {
+                        return std::find(std::begin(second), std::end(second), value) == std::end(second);
+                     });
+        return result;
+    }
+    
+
+    /*
+        Produces the set difference of two sequences by using the specified IEqualityComparer<T> to compare values.
+     */
+    template<typename container, typename binary_predicate>
+    auto except(const container& first, const container& second, binary_predicate&& comparator) {
+        container result;
+        std::copy_if(std::begin(first),
+                     std::end(first),
+                     std::back_inserter(result),
+                     [&second, &comparator](const typename container::value_type& value) {
+                            return std::find_if(std::begin(second),
+                                                std::end(second),
+                                                [&comparator, &value] (const typename container::value_type& nested_value) {
+                                                        return comparator(value, nested_value);
+                                                }) == std::end(second);
+                     });
+        return result;
     }
     
     
