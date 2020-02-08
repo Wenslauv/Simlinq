@@ -178,28 +178,26 @@ namespace simlinq {
 //Returns an Int64 that represents the total number of elements in a sequence.
 //LongCount<TSource>(IEnumerable<TSource>, Func<TSource,Boolean>)
 //Returns an Int64 that represents how many elements in a sequence satisfy a condition.
-//Max<TSource,TResult>(IEnumerable<TSource>, Func<TSource,TResult>)
-//Invokes a transform function on each element of a generic sequence and returns the maximum resulting value.
-//Max<TSource>(IEnumerable<TSource>, Func<TSource,Decimal>)
-//Invokes a transform function on each element of a sequence and returns the maximum Decimal value.
-//Max<TSource>(IEnumerable<TSource>, Func<TSource,Double>)
-//Invokes a transform function on each element of a sequence and returns the maximum Double value.
-//Max<TSource>(IEnumerable<TSource>, Func<TSource,Int32>)
-//Invokes a transform function on each element of a sequence and returns the maximum Int32 value.
-//Max<TSource>(IEnumerable<TSource>, Func<TSource,Int64>)
-//Invokes a transform function on each element of a sequence and returns the maximum Int64 value.
-//Max<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Decimal>>)
-//Invokes a transform function on each element of a sequence and returns the maximum nullable Decimal value.
-//Max<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Double>>)
-//Invokes a transform function on each element of a sequence and returns the maximum nullable Double value.
-//Max<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Int32>>)
-//Invokes a transform function on each element of a sequence and returns the maximum nullable Int32 value.
-//Max<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Int64>>)
-//Invokes a transform function on each element of a sequence and returns the maximum nullable Int64 value.
-//Max<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Single>>)
-//Invokes a transform function on each element of a sequence and returns the maximum nullable Single value.
-//Max<TSource>(IEnumerable<TSource>, Func<TSource,Single>)
-//Invokes a transform function on each element of a sequence and returns the maximum Single value.
+    
+    
+    /*
+        Invokes a transform function on each element of a generic sequence and returns the maximum resulting value.
+    */
+    template<typename container, typename transform>
+    auto Max(const container& c, transform&& trans) {
+        using optional_type = std::optional<typename container::value_type>;
+
+        if (std::begin(c) == std::end(c)) {
+            return optional_type();
+        }
+        
+        auto max_value = trans(*std::begin(c));
+        for (const auto& value : c) {
+            max_value = std::max(trans(value), max_value);
+        } 
+        return optional_type(max_value);
+    }
+    
 
     /*
         Returns the minimum value in a sequence.
@@ -230,7 +228,7 @@ namespace simlinq {
         } 
         return optional_type(min_value);
     }
-    
+
 //OfType<TResult>(IEnumerable)
 //Filters the elements of an IEnumerable based on a specified type.
 //OrderBy<TSource,TKey>(IEnumerable<TSource>, Func<TSource,TKey>)
