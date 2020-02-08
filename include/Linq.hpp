@@ -135,7 +135,7 @@ namespace simlinq {
         using optional_type = std::optional<typename container::value_type>;
         std::begin(c) == std::end(c)
             ? optional_type()
-            : optional_type(*(c.first()));
+            : optional_type(*(c.front()));
     }
 
 
@@ -162,7 +162,7 @@ namespace simlinq {
     auto FirstOrDefault(const container& c) {
         std::begin(c) == std::end(c)
             ? typename container::value_type()
-            : *(c.first());
+            : *(c.front());
     }
 
 
@@ -207,14 +207,61 @@ namespace simlinq {
 //Correlates the elements of two sequences based on matching keys. The default equality comparer is used to compare keys.
 //Join<TOuter,TInner,TKey,TResult>(IEnumerable<TOuter>, IEnumerable<TInner>, Func<TOuter,TKey>, Func<TInner,TKey>, Func<TOuter,TInner,TResult>, IEqualityComparer<TKey>)
 //Correlates the elements of two sequences based on matching keys. A specified IEqualityComparer<T> is used to compare keys.
-//Last<TSource>(IEnumerable<TSource>)
-//Returns the last element of a sequence.
-//Last<TSource>(IEnumerable<TSource>, Func<TSource,Boolean>)
-//Returns the last element of a sequence that satisfies a specified condition.
-//LastOrDefault<TSource>(IEnumerable<TSource>)
-//Returns the last element of a sequence, or a default value if the sequence contains no elements.
-//LastOrDefault<TSource>(IEnumerable<TSource>, Func<TSource,Boolean>)
-//Returns the last element of a sequence that satisfies a condition or a default value if no such element is found.
+
+    /*
+        Returns the last element of a sequence.
+    */
+    template <typename container>
+    auto Last(const container &c) {
+        using optional_type = std::optional<typename container::value_type>;
+
+        std::begin(c) == std::end(c)
+            ? optional_type()
+            : optional_type(*(c.back()));
+    }
+
+
+    /*
+        Returns the last element of a sequence that satisfies a specified condition.
+    */
+    template<typename container, unary_predicate condition>
+    auto Last(const container& c, condition&& cond) {
+        using optional_type = std::optional<typename container::value_type>;
+
+        auto res = std::find_last_if(std::begin(c),
+                                     std::end(c),
+                                     cond);
+        return res == std::end(c)
+                ? optional_type()
+                : optional_type(*res);
+    }
+
+
+    /* 
+        Returns the last element of a sequence, or a default value if the sequence contains no elements.
+    */
+    template<typename container>
+    auto LastOrDefault(const container& c) {
+        std::begin(c) == std::end(c)
+            ? typename container::value_type()
+            : *(c.back());
+    }
+
+
+    /*
+        Returns the last element of a sequence that satisfies a condition or a default value if no such element is found.
+    */
+    template<typename container, typename condition>
+    auto FirstOrDefault(const container& c, condition&& cond) {
+        auto res = std::find_last_if(std::begin(c),
+                                      std::end(c),
+                                      cond);
+        return res == std::end(c)
+                ? typename container::value_type()
+                : *res;
+    }
+
+
 //LongCount<TSource>(IEnumerable<TSource>)
 //Returns an Int64 that represents the total number of elements in a sequence.
 //LongCount<TSource>(IEnumerable<TSource>, Func<TSource,Boolean>)
