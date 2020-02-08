@@ -5,25 +5,50 @@
 
 namespace simlinq {
 
-//Aggregate<TSource,TAccumulate,TResult>(IEnumerable<TSource>, TAccumulate, Func<TAccumulate,TSource,TAccumulate>, Func<TAccumulate,TResult>)
-//Applies an accumulator function over a sequence. The specified seed value is used as the initial accumulator value, and the specified function is used to select the result value.
-//Aggregate<TSource,TAccumulate>(IEnumerable<TSource>, TAccumulate, Func<TAccumulate,TSource,TAccumulate>)
-//Applies an accumulator function over a sequence. The specified seed value is used as the initial accumulator value.
+
+    /*
+        Applies an accumulator function over a sequence. The specified seed value is used as the initial accumulator value, and the specified function is used to select the result value.
+    */
+    template<typename container, typename seed, typename accumulator, typename selector>
+    auto Aggregate(const container& src, seed&& s, accumulator&& acc, selector&& sel) {
+        decltype(acc) result(s);
+
+        for (const auto& value : src) {
+            acc(value, result);
+        }
+        return sel(result);
+    }
+
+
+    /*
+        Applies an accumulator function over a sequence. The specified seed value is used as the initial accumulator value.
+    */
+    template<typename container, typename seed, typename accumulator>
+    auto Aggregate(const container& src, seed&& s, accumulator&& acc) {
+        decltype(acc) result(s);
+
+        for (const auto& value : src) {
+            acc(value, result);
+        }
+        result;
+    }
+
 
     /*
         Applies an accumulator function over a sequence.
     */
-    template <typename container, typename aggregator>
-    auto Aggregate(const container &c, aggregator &&agr) {
+    template <typename container, typename accumulator>
+    auto Aggregate(const container &c, accumulator &&acc) {
         typename container::value_type result;
 
         for (const auto &value : c)
         {
-            agr(value, result);
+            acc(value, result);
         }
 
         return result;
     }
+
 
     /*
         Appends a value to the end of the sequence.
@@ -33,6 +58,7 @@ namespace simlinq {
         // TODO: this is bad container-specific implementation; should be rewritten.
         container.push_back(value);
     }
+
 
     /*
         Computes the average of a sequence.
@@ -51,27 +77,27 @@ namespace simlinq {
         return result;
     }
 
-//Computes the average of a sequence of Single values.
-//Average<TSource>(IEnumerable<TSource>, Func<TSource,Decimal>)
-//Computes the average of a sequence of Decimal values that are obtained by invoking a transform function on each element of the input sequence.
-//Average<TSource>(IEnumerable<TSource>, Func<TSource,Double>)
-//Computes the average of a sequence of Double values that are obtained by invoking a transform function on each element of the input sequence.
-//Average<TSource>(IEnumerable<TSource>, Func<TSource,Int32>)
-//Computes the average of a sequence of Int32 values that are obtained by invoking a transform function on each element of the input sequence.
-//Average<TSource>(IEnumerable<TSource>, Func<TSource,Int64>)
-//Computes the average of a sequence of Int64 values that are obtained by invoking a transform function on each element of the input sequence.
-//Average<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Decimal>>)
-//Computes the average of a sequence of nullable Decimal values that are obtained by invoking a transform function on each element of the input sequence.
-//Average<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Double>>)
-//Computes the average of a sequence of nullable Double values that are obtained by invoking a transform function on each element of the input sequence.
-//Average<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Int32>>)
-//Computes the average of a sequence of nullable Int32 values that are obtained by invoking a transform function on each element of the input sequence.
-//Average<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Int64>>)
-//Computes the average of a sequence of nullable Int64 values that are obtained by invoking a transform function on each element of the input sequence.
-//Average<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Single>>)
-//Computes the average of a sequence of nullable Single values that are obtained by invoking a transform function on each element of the input sequence.
-//Average<TSource>(IEnumerable<TSource>, Func<TSource,Single>)
-//Computes the average of a sequence of Single values that are obtained by invoking a transform function on each element of the input sequence.
+
+    /*
+        Computes the average of a sequence that are obtained by invoking a transform function on each element of the input sequence.
+    */
+    template <typename container, typename transform>
+    auto Average(const container &src, transform &&trans) {
+        using optional_type = std::optional<decltype(trans)>;
+
+        if (std::begin(src) == std::end(src)) {
+            return optional_type();
+        }
+
+        decltype(trans) result;
+        for (const auto &value : src)
+        {
+            result += trans(src);
+        }
+        result /= std::size(src);
+        return optional_type(result);
+    }
+
 //Cast<TResult>(IEnumerable)
 //Casts the elements of an IEnumerable to the specified type.
 
