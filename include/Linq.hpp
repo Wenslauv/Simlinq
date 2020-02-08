@@ -1,9 +1,31 @@
+#include <algorithm>
+#include <numeric>
+
+
+
+namespace simlinq {
+
+
 //Aggregate<TSource,TAccumulate,TResult>(IEnumerable<TSource>, TAccumulate, Func<TAccumulate,TSource,TAccumulate>, Func<TAccumulate,TResult>)
 //Applies an accumulator function over a sequence. The specified seed value is used as the initial accumulator value, and the specified function is used to select the result value.
 //Aggregate<TSource,TAccumulate>(IEnumerable<TSource>, TAccumulate, Func<TAccumulate,TSource,TAccumulate>)
 //Applies an accumulator function over a sequence. The specified seed value is used as the initial accumulator value.
-//Aggregate<TSource>(IEnumerable<TSource>, Func<TSource,TSource,TSource>)
-//Applies an accumulator function over a sequence.
+
+    /*
+        Applies an accumulator function over a sequence.
+    */
+    template<typename container, typename aggregator>
+    auto Aggregate(const container& c, aggregator&& agr) {
+        typename container::value_type result;
+        
+        for (const auto& value : c) {
+            agr(value, result);
+        }
+
+        return result;
+    }
+
+
 //Append<TSource>(IEnumerable<TSource>, TSource)
 //Appends a value to the end of the sequence.
 //AsEnumerable<TSource>(IEnumerable<TSource>)
@@ -301,12 +323,12 @@
 //Zip<TFirst,TSecond,TResult>(IEnumerable<TFirst>, IEnumerable<TSecond>, Func<TFirst,TSecond,TResult>)
 //Applies a specified function to the corresponding elements of two sequences, producing a sequence of the results.
 
-#include <algorithm>
-#include <numeric>
+// #include <algorithm>
+// #include <numeric>
 
 
 
-namespace simlinq {
+// namespace simlinq {
 
     namespace detail {
         template<typename iter>
