@@ -327,10 +327,25 @@ namespace simlinq {
 //Sorts the elements of a sequence in descending order according to a key.
 //OrderByDescending<TSource,TKey>(IEnumerable<TSource>, Func<TSource,TKey>, IComparer<TKey>)
 //Sorts the elements of a sequence in descending order by using a specified comparer.
-//Prepend<TSource>(IEnumerable<TSource>, TSource)
-//Adds a value to the beginning of the sequence.
-//Reverse<TSource>(IEnumerable<TSource>)
-//Inverts the order of the elements in a sequence.
+
+    /*
+        Adds a value to the beginning of the sequence.
+    */
+    template<typename container>
+    void Prepend(const container& src, typename container::value_type&& value) {
+        src.insert(std::begin(src),
+                   value);
+    }
+
+
+    /*
+        Inverts the order of the elements in a sequence.
+    */
+    template<typename container>
+    void Reverse(container& src) {
+        std::reverse( std::begin(src), std::end(src) );
+    }
+
 //SelectMany<TSource,TCollection,TResult>(IEnumerable<TSource>, Func<TSource,IEnumerable<TCollection>>, Func<TSource,TCollection,TResult>)
 //Projects each element of a sequence to an IEnumerable<T>, flattens the resulting sequences into one sequence, and invokes a result selector function on each element therein.
 //SelectMany<TSource,TCollection,TResult>(IEnumerable<TSource>, Func<TSource,Int32,IEnumerable<TCollection>>, Func<TSource,TCollection,TResult>)
