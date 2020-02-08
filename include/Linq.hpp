@@ -29,7 +29,7 @@ namespace simlinq {
     template <typename container>
     void Append(container &c, typename container::value_type &value) {
         // TODO: this is bad container-specific implementation; should be rewritten.
-        container.push_back(value);
+        c.push_back(value);
     }
 
     /*
@@ -101,13 +101,13 @@ namespace simlinq {
     /*
         Returns the first element in a sequence that satisfies a specified condition.
     */
-    template<typename container, unary_predicate condition>
-    std::optional<typename container::value_type> First(const container& c, condition&& cond) {
+    template<typename container, typename unary_predicate>
+    std::optional<typename container::value_type> First(const container& c, unary_predicate&& condition) {
         using optional_type = std::optional<typename container::value_type>;
 
-        auto res = std::find_first_if(std::begin(c),
-                                      std::end(c),
-                                      cond);
+        auto res = std::find_if(std::begin(c),
+                                std::end(c),
+                                condition);
         return res == std::end(c)
                 ? optional_type()
                 : optional_type(*res);
@@ -130,9 +130,9 @@ namespace simlinq {
     */
     template<typename container, typename condition>
     auto FirstOrDefault(const container& c, condition&& cond) {
-        auto res = std::find_first_if(std::begin(c),
-                                      std::end(c),
-                                      cond);
+        auto res = std::find_if(std::begin(c),
+                                std::end(c),
+                                cond);
         return res == std::end(c)
                 ? typename container::value_type()
                 : *res;
