@@ -358,14 +358,43 @@ namespace simlinq {
                   );
         return result;
     }
-//Where<TSource>(IEnumerable<TSource>, Func<TSource,Boolean>)
-//Filters a sequence of values based on a predicate.
-//Where<TSource>(IEnumerable<TSource>, Func<TSource,Int32,Boolean>)
-//Filters a sequence of values based on a predicate. Each element's index is used in the logic of the predicate function.
+
+
+    /*
+        Filters a sequence of values based on a predicate.
+    */
+    template<typename container, typename unary_predicate>
+    auto Where(const container& src, unary_predicate&& predicate) {
+        container result;
+
+        std::copy_if(std::begin(src),
+                     std::end(src),
+                     std::back_inserter(result),
+                     predicate);
+        return result;
+    }
+
+
+    /*
+        Filters a sequence of values based on a predicate. Each element's index is used in the logic of the predicate function.
+    */
+    template<typename container, typename binary_predicate>
+    auto Where(const container& src, binary_predicate&& predicate) {
+        container result;
+        size_t index = 0;
+        for (const auto& value : src) {
+            if (predicate(index, value)) { 
+                result.push_back(value);
+            }
+            index ++;
+        }
+        
+        return result;
+    }
+
+
 //Zip<TFirst,TSecond,TResult>(IEnumerable<TFirst>, IEnumerable<TSecond>, Func<TFirst,TSecond,TResult>)
 //Applies a specified function to the corresponding elements of two sequences, producing a sequence of the results.
-
-
 
 
     namespace detail {
