@@ -1,5 +1,7 @@
 #include <algorithm>
 #include <numeric>
+#include <unordered_set>
+
 
 namespace simlinq {
 
@@ -326,10 +328,36 @@ namespace simlinq {
 //Creates a Lookup<TKey,TElement> from an IEnumerable<T> according to a specified key selector function.
 //ToLookup<TSource,TKey>(IEnumerable<TSource>, Func<TSource,TKey>, IEqualityComparer<TKey>)
 //Creates a Lookup<TKey,TElement> from an IEnumerable<T> according to a specified key selector function and key comparer.
-//Union<TSource>(IEnumerable<TSource>, IEnumerable<TSource>)
-//Produces the set union of two sequences by using the default equality comparer.
-//Union<TSource>(IEnumerable<TSource>, IEnumerable<TSource>, IEqualityComparer<TSource>)
-//Produces the set union of two sequences by using a specified IEqualityComparer<T>.
+
+    /*
+        Produces the set union of two sequences by using the default equality comparer.
+    */
+    template<typename container>
+    auto Union(const container& first, const container& second) {
+        std::unordered_set<typename container::value_type> result(std::begin(first), std::end(second));
+
+        std::copy(std::begin(second), 
+                  std::end(second),
+                  std::inserter(result, std::end(result))
+                  );
+        return result;
+    }
+
+
+    /*
+        Produces the set union of two sequences by using a specified IEqualityComparer<T>.
+    */
+    template<typename container, typename comparator>
+    auto Union(const container& first, const container& second, comparator&& comp) {
+        using value_type = typename container::value_type;
+        std::unordered_set<value_type, std::hash<value_type>, decltype(comp)> result(std::begin(first), std::end(second));
+
+        std::copy(std::begin(second), 
+                  std::end(second),
+                  std::inserter(result, std::end(result))
+                  );
+        return result;
+    }
 //Where<TSource>(IEnumerable<TSource>, Func<TSource,Boolean>)
 //Filters a sequence of values based on a predicate.
 //Where<TSource>(IEnumerable<TSource>, Func<TSource,Int32,Boolean>)
