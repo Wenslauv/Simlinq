@@ -26,29 +26,32 @@ namespace simlinq {
     }
 
 
-//Append<TSource>(IEnumerable<TSource>, TSource)
-//Appends a value to the end of the sequence.
-//AsEnumerable<TSource>(IEnumerable<TSource>)
-//Returns the input typed as IEnumerable<T>.
-//Average(IEnumerable<Decimal>)
-//Computes the average of a sequence of Decimal values.
-//Average(IEnumerable<Double>)
-//Computes the average of a sequence of Double values.
-//Average(IEnumerable<Int32>)
-//Computes the average of a sequence of Int32 values.
-//Average(IEnumerable<Int64>)
-//Computes the average of a sequence of Int64 values.
-//Average(IEnumerable<Nullable<Decimal>>)
-//Computes the average of a sequence of nullable Decimal values.
-//Average(IEnumerable<Nullable<Double>>)
-//Computes the average of a sequence of nullable Double values.
-//Average(IEnumerable<Nullable<Int32>>)
-//Computes the average of a sequence of nullable Int32 values.
-//Average(IEnumerable<Nullable<Int64>>)
-//Computes the average of a sequence of nullable Int64 values.
-//Average(IEnumerable<Nullable<Single>>)
-//Computes the average of a sequence of nullable Single values.
-//Average(IEnumerable<Single>)
+    /*
+        Appends a value to the end of the sequence.
+    */
+    template<typename container>
+    void Append(container& c, typename container::value_type& value) {
+        // TODO: this is bad container-specific implementation; should be rewritten.
+        container.push_back(value);
+    }
+
+
+    /*
+        Computes the average of a sequence.
+    */
+    template<typename container, typename result_type = typename container::value_type>
+    result_type Average(const container& c) {
+        if (std::begin(c) == std::end(c))
+            throw std::invalid_argument("Average: an empty array");
+
+        result_type result;
+        for (const auto& value : c) {
+            result += c;
+        }
+        result /= std::size(c);
+        return result;
+    }
+
 //Computes the average of a sequence of Single values.
 //Average<TSource>(IEnumerable<TSource>, Func<TSource,Decimal>)
 //Computes the average of a sequence of Decimal values that are obtained by invoking a transform function on each element of the input sequence.
