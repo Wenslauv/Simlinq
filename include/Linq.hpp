@@ -98,8 +98,21 @@ namespace simlinq {
         return optional_type(result);
     }
 
-//Cast<TResult>(IEnumerable)
-//Casts the elements of an IEnumerable to the specified type.
+
+    /*
+        Casts the elements of an IEnumerable to the specified type.
+    */
+    template<typename cast_type, typename container> 
+    auto Cast(const container& src) {
+        std::vector<cast_type> result;
+
+        std::transform(std::begin(src),
+                       std::end(src),
+                       std::begin(result),
+                       [](const auto& value) { return static_cast<cast_type>(value); }
+                       );
+        return result;
+    }
 
 //DefaultIfEmpty<TSource>(IEnumerable<TSource>)
 //Returns the elements of the specified sequence or the type parameter's default value in a singleton collection if the sequence is empty.
