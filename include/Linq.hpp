@@ -200,50 +200,37 @@ namespace simlinq {
 //Invokes a transform function on each element of a sequence and returns the maximum nullable Single value.
 //Max<TSource>(IEnumerable<TSource>, Func<TSource,Single>)
 //Invokes a transform function on each element of a sequence and returns the maximum Single value.
-//Min(IEnumerable<Decimal>)
-//Returns the minimum value in a sequence of Decimal values.
-//Min(IEnumerable<Double>)
-//Returns the minimum value in a sequence of Double values.
-//Min(IEnumerable<Int32>)
-//Returns the minimum value in a sequence of Int32 values.
-//Min(IEnumerable<Int64>)
-//Returns the minimum value in a sequence of Int64 values.
-//Min(IEnumerable<Nullable<Decimal>>)
-//Returns the minimum value in a sequence of nullable Decimal values.
-//Min(IEnumerable<Nullable<Double>>)
-//Returns the minimum value in a sequence of nullable Double values.
-//Min(IEnumerable<Nullable<Int32>>)
-//Returns the minimum value in a sequence of nullable Int32 values.
-//Min(IEnumerable<Nullable<Int64>>)
-//Returns the minimum value in a sequence of nullable Int64 values.
-//Min(IEnumerable<Nullable<Single>>)
-//Returns the minimum value in a sequence of nullable Single values.
-//Min(IEnumerable<Single>)
-//Returns the minimum value in a sequence of Single values.
-//Min<TSource,TResult>(IEnumerable<TSource>, Func<TSource,TResult>)
-//Invokes a transform function on each element of a generic sequence and returns the minimum resulting value.
-//Min<TSource>(IEnumerable<TSource>)
-//Returns the minimum value in a generic sequence.
-//Min<TSource>(IEnumerable<TSource>, Func<TSource,Decimal>)
-//Invokes a transform function on each element of a sequence and returns the minimum Decimal value.
-//Min<TSource>(IEnumerable<TSource>, Func<TSource,Double>)
-//Invokes a transform function on each element of a sequence and returns the minimum Double value.
-//Min<TSource>(IEnumerable<TSource>, Func<TSource,Int32>)
-//Invokes a transform function on each element of a sequence and returns the minimum Int32 value.
-//Min<TSource>(IEnumerable<TSource>, Func<TSource,Int64>)
-//Invokes a transform function on each element of a sequence and returns the minimum Int64 value.
-//Min<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Decimal>>)
-//Invokes a transform function on each element of a sequence and returns the minimum nullable Decimal value.
-//Min<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Double>>)
-//Invokes a transform function on each element of a sequence and returns the minimum nullable Double value.
-//Min<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Int32>>)
-//Invokes a transform function on each element of a sequence and returns the minimum nullable Int32 value.
-//Min<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Int64>>)
-//Invokes a transform function on each element of a sequence and returns the minimum nullable Int64 value.
-//Min<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Single>>)
-//Invokes a transform function on each element of a sequence and returns the minimum nullable Single value.
-//Min<TSource>(IEnumerable<TSource>, Func<TSource,Single>)
-//Invokes a transform function on each element of a sequence and returns the minimum Single value.
+
+    /*
+        Returns the minimum value in a sequence.
+    */
+    template<typename container>
+    auto Min(const container& c) {
+        using optional_type = std::optional<typename container::value_type>;
+
+        return std::begin(c) == std::end(c)
+            ? optional_type()
+            : optional_type(*(std::min_element(std::begin(c), std::end(c))));
+    }
+
+
+    /*
+        Invokes a transform function on each element of a generic sequence and returns the minimum resulting value.
+    */
+    template<typename container, typename transform>
+    auto Min(const container& c, transform&& trans) {
+        using optional_type = std::optional<typename container::value_type>;
+
+        if (std::begin(c) == std::end(c))
+            return optional_type();
+        
+        auto min_value = trans(*std::begin(c));
+        for (const auto& value : c) {
+            min_value = std::min(trans(value), min_value);
+        } 
+        return optional_type(min_value);
+    }
+    
 //OfType<TResult>(IEnumerable)
 //Filters the elements of an IEnumerable based on a specified type.
 //OrderBy<TSource,TKey>(IEnumerable<TSource>, Func<TSource,TKey>)
@@ -602,5 +589,5 @@ namespace simlinq {
         std::copy(std::begin(src), std::begin(src) + N, std::begin(result));
         return result;
     }
-    
+
 } // namespace simlinq
