@@ -265,46 +265,31 @@ namespace simlinq {
 //Bypasses elements in a sequence as long as a specified condition is true and then returns the remaining elements.
 //SkipWhile<TSource>(IEnumerable<TSource>, Func<TSource,Int32,Boolean>)
 //Bypasses elements in a sequence as long as a specified condition is true and then returns the remaining elements. The element's index is used in the logic of the predicate function.
-//Sum(IEnumerable<Decimal>)
-//Computes the sum of a sequence of Decimal values.
-//Sum(IEnumerable<Double>)
-//Computes the sum of a sequence of Double values.
-//Sum(IEnumerable<Int32>)
-//Computes the sum of a sequence of Int32 values.
-//Sum(IEnumerable<Int64>)
-//Computes the sum of a sequence of Int64 values.
-//Sum(IEnumerable<Nullable<Decimal>>)
-//Computes the sum of a sequence of nullable Decimal values.
-//Sum(IEnumerable<Nullable<Double>>)
-//Computes the sum of a sequence of nullable Double values.
-//Sum(IEnumerable<Nullable<Int32>>)
-//Computes the sum of a sequence of nullable Int32 values.
-//Sum(IEnumerable<Nullable<Int64>>)
-//Computes the sum of a sequence of nullable Int64 values.
-//Sum(IEnumerable<Nullable<Single>>)
-//Computes the sum of a sequence of nullable Single values.
-//Sum(IEnumerable<Single>)
-//Computes the sum of a sequence of Single values.
-//Sum<TSource>(IEnumerable<TSource>, Func<TSource,Decimal>)
-//Computes the sum of the sequence of Decimal values that are obtained by invoking a transform function on each element of the input sequence.
-//Sum<TSource>(IEnumerable<TSource>, Func<TSource,Double>)
-//Computes the sum of the sequence of Double values that are obtained by invoking a transform function on each element of the input sequence.
-//Sum<TSource>(IEnumerable<TSource>, Func<TSource,Int32>)
-//Computes the sum of the sequence of Int32 values that are obtained by invoking a transform function on each element of the input sequence.
-//Sum<TSource>(IEnumerable<TSource>, Func<TSource,Int64>)
-//Computes the sum of the sequence of Int64 values that are obtained by invoking a transform function on each element of the input sequence.
-//Sum<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Decimal>>)
-//Computes the sum of the sequence of nullable Decimal values that are obtained by invoking a transform function on each element of the input sequence.
-//Sum<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Double>>)
-//Computes the sum of the sequence of nullable Double values that are obtained by invoking a transform function on each element of the input sequence.
-//Sum<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Int32>>)
-//Computes the sum of the sequence of nullable Int32 values that are obtained by invoking a transform function on each element of the input sequence.
-//Sum<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Int64>>)
-//Computes the sum of the sequence of nullable Int64 values that are obtained by invoking a transform function on each element of the input sequence.
-//Sum<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Single>>)
-//Computes the sum of the sequence of nullable Single values that are obtained by invoking a transform function on each element of the input sequence.
-//Sum<TSource>(IEnumerable<TSource>, Func<TSource,Single>)
-//Computes the sum of the sequence of Single values that are obtained by invoking a transform function on each element of the input sequence.
+
+    /*
+        Computes the sum of a sequence of Decimal values.
+    */
+    template<typename container>
+    auto Sum(const container& c) {
+        return std::accumulate(std::begin(c), 
+                               std::end(c),
+                               typename container::value_type());
+        
+    }
+
+
+    /*
+        Computes the sum of the sequence of Decimal values that are obtained by invoking a transform function on each element of the input sequence.
+    */
+    template<typename container, typename transform>        
+    auto Sum(const container& c, transform&& trans) {
+        return std::accumulate(std::begin(c),
+                               std::end(c),
+                               typename container::value_type(),
+                               trans);
+    }
+
+
 //TakeWhile<TSource>(IEnumerable<TSource>, Func<TSource,Boolean>)
 //Returns elements from a sequence as long as a specified condition is true.
 //TakeWhile<TSource>(IEnumerable<TSource>, Func<TSource,Int32,Boolean>)
@@ -352,10 +337,8 @@ namespace simlinq {
 //Zip<TFirst,TSecond,TResult>(IEnumerable<TFirst>, IEnumerable<TSecond>, Func<TFirst,TSecond,TResult>)
 //Applies a specified function to the corresponding elements of two sequences, producing a sequence of the results.
 
-// #include <algorithm>
-// #include <numeric>
 
-// namespace simlinq {
+
 
     namespace detail {
         
