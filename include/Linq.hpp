@@ -372,253 +372,235 @@ namespace simlinq {
 
 // namespace simlinq {
 
-namespace detail
-{
-template <typename iter>
-const auto &max(const iter &begin, const iter &end)
-{
-    if (begin == end)
-        assert(false);
-    return *std::max_element(begin, end);
-}
-} // namespace detail
+    namespace detail {
+        
+        template <typename iter>
+        const auto &max(const iter &begin, const iter &end) {
+            if (begin == end)
+                assert(false);
+            return *std::max_element(begin, end);
+        }
+    
+    } // namespace detail
 
-/*
+    /*
         Determines whether all elements of a sequence satisfy a condition.
      */
-template <typename container, typename unary_predicate>
-bool all(const container &src, unary_predicate &&condition)
-{
-    for (auto it = std::begin(src); it != std::end(src); ++it)
-    {
-        if (not condition(*it))
-            return false;
+    template <typename container, typename unary_predicate>
+    bool all(const container &src, unary_predicate &&condition) {
+        for (auto it = std::begin(src); it != std::end(src); ++it)
+        {
+            if (not condition(*it))
+                return false;
+        }
+        return true;
     }
-    return true;
-}
 
-/*
+    /*
         Determines whether a sequence contains any elements.
      */
-template <typename container>
-bool any(const container &src)
-{
-    return std::begin(src) != std::end(src);
-}
-
-/*
-        Determines whether any element of a sequence satisfies a condition.
-     */
-template <typename container, typename unary_predicate>
-bool any(const container &src, unary_predicate &&condition)
-{
-    for (auto it = std::begin(src); it != std::end(src); ++it)
-    {
-        if (condition(*it))
-            return true;
+    template <typename container>
+    bool any(const container &src) {
+        return std::begin(src) != std::end(src);
     }
-    return false;
-}
 
-/*
+    /*
+        Determines whether any element of a sequence satisfies a condition.
+    */
+    template <typename container, typename unary_predicate>
+    bool any(const container &src, unary_predicate &&condition) {
+        for (auto it = std::begin(src); it != std::end(src); ++it)
+        {
+            if (condition(*it))
+                return true;
+        }
+        return false;
+    }
+
+    /*
         Concatenates two sequences.
     */
-template <typename container>
-auto concat(const container &first, const container &second)
-{
-    container result(std::size(first) + std::size(second));
+    template <typename container>
+    auto concat(const container &first, const container &second) {
+        container result(std::size(first) + std::size(second));
 
-    std::copy(std::begin(second),
-              std::end(second),
-              std::copy(std::begin(first),
-                        std::end(first),
-                        std::begin(result)));
-    return result;
-}
+        std::copy(std::begin(second),
+                std::end(second),
+                std::copy(std::begin(first),
+                            std::end(first),
+                            std::begin(result)));
+        return result;
+    }
 
-/*
+    /*
         Determines whether any element of a sequence satisfies a condition.
-     */
-template <typename container, typename T>
-bool contains(const container &src, const T &&value)
-{
-    return std::find(std::begin(src),
-                     std::end(src),
-                     value) != std::end(src);
-}
+    */
+    template <typename container, typename T>
+    bool contains(const container &src, const T &&value) {
+        return std::find(std::begin(src),
+                        std::end(src),
+                        value) != std::end(src);
+    }
 
-/*
+    /*
         Determines whether a sequence contains a specified element by using a specified binary predicate.
-     */
-template <typename container, typename T, typename binary_predicate>
-bool contains(const container &src, const T &&value, binary_predicate &&predicate)
-{
-    for (auto it = std::begin(src); it != std::end(src); ++it)
-    {
-        if (predicate(*it, value))
-            return true;
+    */
+    template <typename container, typename T, typename binary_predicate>
+    bool contains(const container &src, const T &&value, binary_predicate &&predicate) {
+        for (auto it = std::begin(src); it != std::end(src); ++it)
+        {
+            if (predicate(*it, value))
+                return true;
+        }
+
+        return false;
     }
 
-    return false;
-}
-
-/*
+    /*
         Returns the number of elements in a sequence.
-     */
-template <typename container>
-auto count(const container &src)
-{
-    return std::distance(std::begin(src), std::end(src));
-}
-
-/*
-        Returns a number that represents how many elements in the specified sequence satisfy a condition.
-     */
-template <typename container, typename unary_predicate>
-auto count(const container &src, unary_predicate &&condition)
-{
-    return std::count_if(std::begin(src),
-                         std::end(src),
-                         condition);
-}
-
-/*
-        Returns an empty IEnumerable<T> that has the specified type argument.
-     */
-template <typename T>
-auto empty()
-{
-    return T{};
-}
-
-/*
-        Produces the set difference of two sequences by using the default equality comparer to compare values.
-     */
-template <typename container>
-auto except(const container &first, const container &second)
-{
-    container result;
-    std::copy_if(std::begin(first),
-                 std::end(first),
-                 std::back_inserter(result),
-                 [&second](const typename container::value_type &value) {
-                     return std::find(std::begin(second), std::end(second), value) == std::end(second);
-                 });
-    return result;
-}
-
-/*
-        Produces the set difference of two sequences by using the specified IEqualityComparer<T> to compare values.
-     */
-template <typename container, typename binary_predicate>
-auto except(const container &first, const container &second, binary_predicate &&comparator)
-{
-    container result;
-    std::copy_if(std::begin(first),
-                 std::end(first),
-                 std::back_inserter(result),
-                 [&second, &comparator](const typename container::value_type &value) {
-                     return std::find_if(std::begin(second),
-                                         std::end(second),
-                                         [&comparator, &value](const typename container::value_type &nested_value) {
-                                             return comparator(value, nested_value);
-                                         }) == std::end(second);
-                 });
-    return result;
-}
-
-/*
-        Returns the maximum value in a sequence.
-     */
-template <typename container>
-const auto &max(const container &src)
-{
-    return detail::max(std::begin(src),
-                       std::end(src));
-}
-
-/*
-        Projects each element of a sequence into a new form by incorporating the element's index.
-     */
-template <template <typename, typename> class ret_type, typename container, typename ind_type = uint32_t>
-auto select(container &src)
-{
-    using pair = std::pair<ind_type, typename container::value_type>;
-    ret_type<pair, std::allocator<pair>> result(src.size());
-
-    for (ind_type i = 0; i < std::size(src); ++i)
-    {
-        result[i] = pair{i, src[i]};
+    */
+    template <typename container>
+    auto count(const container &src) {
+        return std::distance(std::begin(src), std::end(src));
     }
-    return result;
-}
 
-/*
+    /*
+        Returns a number that represents how many elements in the specified sequence satisfy a condition.
+    */
+    template <typename container, typename unary_predicate>
+    auto count(const container &src, unary_predicate &&condition) {
+        return std::count_if(std::begin(src),
+                            std::end(src),
+                            condition);
+    }
+
+    /*
+        Returns an empty IEnumerable<T> that has the specified type argument.
+    */
+    template <typename T>
+    auto empty() {
+        return T{};
+    }
+
+    /*
+        Produces the set difference of two sequences by using the default equality comparer to compare values.
+    */
+    template <typename container>
+    auto except(const container &first, const container &second) {
+        container result;
+        std::copy_if(std::begin(first),
+                    std::end(first),
+                    std::back_inserter(result),
+                    [&second](const typename container::value_type &value) {
+                        return std::find(std::begin(second), std::end(second), value) == std::end(second);
+                    });
+        return result;
+    }
+
+    /*
+        Produces the set difference of two sequences by using the specified IEqualityComparer<T> to compare values.
+    */
+    template <typename container, typename binary_predicate>
+    auto except(const container &first, const container &second, binary_predicate &&comparator) {
+        container result;
+        std::copy_if(std::begin(first),
+                    std::end(first),
+                    std::back_inserter(result),
+                    [&second, &comparator](const typename container::value_type &value) {
+                        return std::find_if(std::begin(second),
+                                            std::end(second),
+                                            [&comparator, &value](const typename container::value_type &nested_value) {
+                                                return comparator(value, nested_value);
+                                            }) == std::end(second);
+                    });
+        return result;
+    }
+
+    /*
+        Returns the maximum value in a sequence.
+    */
+    template <typename container>
+    const auto &max(const container &src) {
+        return detail::max(std::begin(src),
+                        std::end(src));
+    }
+
+    /*
+        Projects each element of a sequence into a new form by incorporating the element's index.
+    */
+    template <template <typename, typename> class ret_type, typename container, typename ind_type = uint32_t>
+    auto select(container &src) {
+        using pair = std::pair<ind_type, typename container::value_type>;
+        ret_type<pair, std::allocator<pair>> result(src.size());
+
+        for (ind_type i = 0; i < std::size(src); ++i)
+        {
+            result[i] = pair{i, src[i]};
+        }
+        return result;
+    }
+
+    /*
         Projects each element of a sequence into a new form.
-     */
-template <template <typename, typename> class ret_type, typename container, typename transform_func>
-auto select(container &src, transform_func &&f)
-{
-    ret_type<typename container::value_type, std::allocator<typename container::value_type>> result(src);
+    */
+    template <template <typename, typename> class ret_type, typename container, typename transform_func>
+    auto select(container &src, transform_func &&f) {
+        ret_type<typename container::value_type, std::allocator<typename container::value_type>> result(src);
 
-    std::transform(std::begin(src), std::end(src), result.begin(), f);
+        std::transform(std::begin(src), std::end(src), result.begin(), f);
 
-    return result;
-}
+        return result;
+    }
 
-/*
+    /*
         Determines whether two sequences are equal by comparing the elements by using the default equality comparer for their type.
-     */
-template <typename container>
-bool sequenceEqual(const container &first, const container &second)
-{
-    return std::size(first) == std::size(second)
-               ? std::equal(std::begin(first), std::end(first), std::begin(second))
-               : false;
-}
+    */
+    template <typename container>
+    bool sequenceEqual(const container &first, const container &second) {
+        return std::size(first) == std::size(second)
+                ? std::equal(std::begin(first), std::end(first), std::begin(second))
+                : false;
+    }
 
-/*
+    /*
         Determines whether two sequences are equal by comparing their elements by using a specified IEqualityComparer<T>
-     */
-template <typename container, typename comparator>
-bool sequenceEqual(const container &first, const container &second, comparator &&comp)
-{
-    return std::size(first) == std::size(second)
-               ? std::equal(std::begin(first), std::end(first), std::begin(second), comp)
-               : false;
-}
+    */
+    template <typename container, typename comparator>
+    bool sequenceEqual(const container &first, const container &second, comparator &&comp) {
+        return std::size(first) == std::size(second)
+                ? std::equal(std::begin(first), std::end(first), std::begin(second), comp)
+                : false;
+    }
 
-/*
+    /*
         Generates a sequence of integral numbers within a specified range.
-     */
-template <typename container, typename T>
-auto range(T &&value, uint32_t count)
-{
-    container c(count);
-    std::iota(std::begin(c), std::end(c), value);
-    return c;
-}
+    */
+    template <typename container, typename T>
+    auto range(T &&value, uint32_t count) {
+        container c(count);
+        std::iota(std::begin(c), std::end(c), value);
+        return c;
+    }
 
-/*
+    /*
         Generates a sequence that contains one repeated value.
-     */
-template <typename container, typename T>
-container repeat(T &&value, uint32_t count)
-{
-    return container(count, value);
-}
+    */
+    template <typename container, typename T>
+    container repeat(T &&value, uint32_t count) {
+        return container(count, value);
+    }
 
-/*
+    /*
         Returns a specified number of contiguous elements from the start of a sequence.
-     */
-template <unsigned int N, typename container>
-container take(const container &src)
-{
-    if (std::begin(src) + N >= std::end(src))
-        return src;
+    */
+    template <unsigned int N, typename container>
+    container take(const container &src) {
+        if (std::begin(src) + N >= std::end(src))
+            return src;
 
-    container result(N);
-    std::copy(std::begin(src), std::begin(src) + N, std::begin(result));
-    return result;
-}
+        container result(N);
+        std::copy(std::begin(src), std::begin(src) + N, std::begin(result));
+        return result;
+    }
+    
 } // namespace simlinq
