@@ -1,5 +1,7 @@
 #include <algorithm>
 #include <numeric>
+#include <optional>
+
 
 namespace simlinq {
 
