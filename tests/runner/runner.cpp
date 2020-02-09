@@ -1,11 +1,12 @@
 
-
 #include "../../include/Linq.hpp"
 
 #include "../../third-party/unittest-cpp/UnitTest++/UnitTest++.h"
 
 
-#include <iostream>
+TEST(Sanity) {
+    CHECK_EQUAL(1,1);
+}
 
 
 
