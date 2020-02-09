@@ -2,12 +2,16 @@ cmake_minimum_required(VERSION 3.10)
 
 project(runner)
 
-set(SOURCES runner.cpp)
+
+set(SOURCES 
+    runner.cpp
+    )
+
 
 add_executable(runner runner.cpp)
 
 
-target_link_libraries(runner -force_load UnitTest++)
+target_link_libraries(runner -force_load suits UnitTest++)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
