@@ -9,6 +9,11 @@
 SUITE(SimpleMethods)
 {
     
+    bool isEven(const int& v) {
+        return v % 2 == 0;
+    }
+    
+    
     TEST(Min)
     {
         
@@ -21,6 +26,30 @@ SUITE(SimpleMethods)
         std::vector<int> empty;
         min = simlinq::Min(empty);
         CHECK(min == std::nullopt);
+    }
+    
+    
+    TEST(Max)
+    {
+        
+    }
+    
+    
+    TEST(Count)
+    {
+        std::vector<int> src{ 1, 2, 3, 4, 5};
+        
+        auto count = simlinq::count(src);
+        CHECK_EQUAL(count, 5);
+        
+        /* with lambda */
+        count = simlinq::count(src, [](const auto& v) { return v % 2 != 0; });
+        CHECK_EQUAL(count, 3);
+        
+        /* with function pointer */
+        count = simlinq::count(src, isEven);
+        CHECK_EQUAL(count, 2);
+        
     }
     
 }
