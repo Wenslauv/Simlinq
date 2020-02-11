@@ -35,7 +35,7 @@ SUITE(CheckMethods)
         CHECK(not simlinq::Any(empty));
     }
     
-    TEST(AnyCondition)
+    TEST(AnyConditional)
     {
         CHECK(simlinq::Any(data, isOdd));
         CHECK(not simlinq::Any(empty, isOdd));
@@ -49,12 +49,33 @@ SUITE(CheckMethods)
         CHECK(not simlinq::Contains(empty, 0));
     }
     
-    TEST(ContainsCondition)
+    TEST(ContainsConditional)
     {
         auto condition = [](const auto& f, const auto& s) { return s + f == 10 ; };
         
         CHECK(simlinq::Contains(data, 5, condition));
         CHECK(not simlinq::Contains(data, -1, condition));
+    }
+    
+    TEST(SequenceEqual)
+    {
+        std::vector<int> origin         { 1,2,3,4,5 };
+        std::vector<int> candidate_1    { 1,2,3,4,4,5};
+        std::vector<int> candidate_2    { 1,2,3,4,5};
+        
+        CHECK(not simlinq::SequenceEqual(origin, candidate_1));
+        
+        CHECK(simlinq::SequenceEqual(origin, candidate_2));
+        CHECK(simlinq::SequenceEqual(origin, origin));
+    }
+    
+    TEST(SequenceEqualComparer)
+    {
+        std::vector<int> origin         { 1,2,3,4,5 };
+        std::vector<int> candidate     { 2,4,6,8,10 };
+            
+        CHECK(simlinq::SequenceEqual(origin, candidate, [](const auto& f, const auto& v) { return f*2 == v; }));
+        CHECK(not simlinq::SequenceEqual(origin, candidate, [](const auto& f, const auto& v){ return f + 1 == v;} ));
     }
         
 }

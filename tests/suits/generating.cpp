@@ -33,6 +33,25 @@ SUITE(GeneratingMethods) {
     }
     
     
+    TEST(Repeat)
+    {
+        using type_t = std::vector<int>;
+        
+        CHECK(simlinq::Repeat<type_t>(5, 4) == (type_t{5,5,5,5}));
+        CHECK(simlinq::Repeat<type_t>(5,0) == empty);
+    }
+    
+    
+    TEST(Take)
+    {
+        std::vector<int> expected{ 1, 2};
+        
+        CHECK(simlinq::Take<2>(first) == expected);
+        CHECK(simlinq::Take<3>(first) != expected);
+        CHECK(simlinq::Take<2>(first) != empty);
+    }
+    
+    
     TEST(Union)
     {
         auto intersect = simlinq::Union(first, second);

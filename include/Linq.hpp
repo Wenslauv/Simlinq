@@ -145,7 +145,7 @@ namespace simlinq {
         Returns the first element in a sequence that satisfies a specified condition.
     */
     template<typename container, typename unary_predicate>
-    std::optional<typename container::value_type> First(const container& c, unary_predicate&& condition) {
+    auto First(const container& c, unary_predicate&& condition) {
         using optional_type = std::optional<typename container::value_type>;
 
         auto res = std::find_if(std::begin(c),
@@ -677,7 +677,7 @@ namespace simlinq {
         Determines whether two sequences are equal by comparing the elements by using the default equality comparer for their type.
     */
     template <typename container>
-    bool sequenceEqual(const container &first, const container &second) {
+    bool SequenceEqual(const container &first, const container &second) {
         return std::size(first) == std::size(second)
                 ? std::equal(std::begin(first), std::end(first), std::begin(second))
                 : false;
@@ -687,7 +687,7 @@ namespace simlinq {
         Determines whether two sequences are equal by comparing their elements by using a specified IEqualityComparer<T>
     */
     template <typename container, typename comparator>
-    bool sequenceEqual(const container &first, const container &second, comparator &&comp) {
+    bool SequenceEqual(const container &first, const container &second, comparator &&comp) {
         return std::size(first) == std::size(second)
                 ? std::equal(std::begin(first), std::end(first), std::begin(second), comp)
                 : false;
@@ -707,7 +707,7 @@ namespace simlinq {
         Generates a sequence that contains one repeated value.
     */
     template <typename container, typename T>
-    container repeat(T &&value, uint32_t count) {
+    container Repeat(T &&value, uint32_t count) {
         return container(count, value);
     }
 
@@ -715,7 +715,7 @@ namespace simlinq {
         Returns a specified number of contiguous elements from the start of a sequence.
     */
     template <unsigned int N, typename container>
-    container take(const container &src) {
+    container Take(const container &src) {
         if (std::begin(src) + N >= std::end(src))
             return src;
 
