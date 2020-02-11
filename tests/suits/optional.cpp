@@ -6,17 +6,25 @@
 
 
 
-SUITE(SimpleMethods)
+SUITE(OptionalMethods)
 {
     
     std::vector<int> data{ -1, 1, -4, 5, 2, 3, 6, 5};
     std::vector<int> empty;
     
-
-    bool isEven(const int& v) {
-        return v % 2 == 0;
-    }
     
+    bool isEven(const int& v) {
+         return v % 2 == 0;
+     }
+     
+     bool isOdd(const int& v) {
+         return v % 2 != -0;
+     }
+     
+     bool isZero(const int& v) {
+         return v == 0;
+     }
+ 
     
     TEST(Min)
     {
@@ -96,9 +104,54 @@ SUITE(SimpleMethods)
         REQUIRE CHECK(first != std::nullopt);
         CHECK_EQUAL(*first, 1);
         
-        first = simlinq::First(empty, positive);
-        CHECK(first == std::nullopt);
+        CHECK(simlinq::First(empty, positive) == std::nullopt);
+        CHECK(simlinq::First(data, [](const auto& v){ return v == 0;}) == std::nullopt);
     }
     
+    TEST(FirstOrDefault)
+    {
+        CHECK_EQUAL(simlinq::FirstOrDefault(data), data[0]);
+        CHECK_EQUAL(simlinq::FirstOrDefault(empty), int());
+    }
     
+    TEST(FirstOrDefaultConditional)
+    {
+        CHECK_EQUAL(simlinq::FirstOrDefault(data, isEven), -4);
+        CHECK_EQUAL(simlinq::FirstOrDefault(data, isZero), int());
+        CHECK_EQUAL(simlinq::FirstOrDefault(empty, isOdd), int());
+    }
+    
+    TEST(Last)
+    {
+        auto last = simlinq::Last(data);
+        REQUIRE CHECK(last != std::nullopt);
+        CHECK_EQUAL(*last, data.back());
+        
+        CHECK(simlinq::Last(empty) == std::nullopt);
+    }
+    
+    TEST(LastConditional)
+    {
+        auto negative = [](const auto& v) { return v < 0;};
+        auto last = simlinq::Last(data, negative);
+        REQUIRE CHECK(last != std::nullopt);
+        CHECK_EQUAL(*last, -4);
+        
+        CHECK(simlinq::Last(empty, negative) == std::nullopt);
+        CHECK(simlinq::Last(data, [](const auto& v){ return v == 0;}) == std::nullopt);
+
+    }
+    
+    TEST(LastOrDefault)
+    {
+        CHECK_EQUAL(simlinq::LastOrDefault(data), data.back());
+        CHECK_EQUAL(simlinq::LastOrDefault(empty), int());
+    }
+    
+    TEST(LastOrDefaultConditional)
+    {
+        CHECK_EQUAL(simlinq::LastOrDefault(data, isEven), 6);
+        CHECK_EQUAL(simlinq::LastOrDefault(data, isZero), int());
+        CHECK_EQUAL(simlinq::LastOrDefault(empty, isOdd), int());
+    }
 }

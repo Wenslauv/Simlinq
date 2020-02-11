@@ -4,7 +4,9 @@ project(suits)
 
 
 set(SOURCES
-    simple.cpp
+    optional.cpp
+    generating.cpp
+    check.cpp
 )
 
 add_library(suits STATIC

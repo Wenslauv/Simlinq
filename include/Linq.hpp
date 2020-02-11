@@ -162,9 +162,9 @@ namespace simlinq {
     */
     template<typename container>
     auto FirstOrDefault(const container& c) {
-        std::begin(c) == std::end(c)
+        return std::begin(c) == std::end(c)
             ? typename container::value_type()
-            : *(c.front());
+            : typename container::value_type(c.front());
     }
 
 
@@ -214,12 +214,12 @@ namespace simlinq {
         Returns the last element of a sequence.
     */
     template <typename container>
-    auto Last(const container &c) {
+    auto Last(const container &src) {
         using optional_type = std::optional<typename container::value_type>;
 
-        std::begin(c) == std::end(c)
+        return std::begin(src) == std::end(src)
             ? optional_type()
-            : optional_type(*(c.back()));
+            : optional_type(src.back());
     }
 
 
@@ -233,7 +233,7 @@ namespace simlinq {
         auto res = std::find_if(std::rbegin(c),
                                 std::rend(c),
                                 cond);
-        return res == std::end(c)
+        return res == std::rend(c)
                 ? optional_type()
                 : optional_type(*res);
     }
@@ -244,9 +244,9 @@ namespace simlinq {
     */
     template<typename container>
     auto LastOrDefault(const container& c) {
-        std::begin(c) == std::end(c)
+        return std::begin(c) == std::end(c)
             ? typename container::value_type()
-            : *(c.back());
+            : typename container::value_type(c.back());
     }
 
 
@@ -258,7 +258,7 @@ namespace simlinq {
         auto res = std::find_if(std::rbegin(c),
                                 std::rend(c),
                                 cond);
-        return res == std::end(c)
+        return res == std::rend(c)
                 ? typename container::value_type()
                 : *res;
     }
@@ -450,7 +450,7 @@ namespace simlinq {
     */
     template<typename container>
     auto Union(const container& first, const container& second) {
-        std::unordered_set<typename container::value_type> result(std::begin(first), std::end(second));
+        std::unordered_set<typename container::value_type> result(std::begin(first), std::end(first));
 
         std::copy(std::begin(second), 
                   std::end(second),
@@ -516,7 +516,7 @@ namespace simlinq {
         Determines whether all elements of a sequence satisfy a condition.
      */
     template <typename container, typename unary_predicate>
-    bool all(const container &src, unary_predicate &&condition) {
+    bool All(const container &src, unary_predicate &&condition) {
         for (auto it = std::begin(src); it != std::end(src); ++it)
         {
             if (not condition(*it))
@@ -529,7 +529,7 @@ namespace simlinq {
         Determines whether a sequence contains any elements.
      */
     template <typename container>
-    bool any(const container &src) {
+    bool Any(const container &src) {
         return std::begin(src) != std::end(src);
     }
 
@@ -537,7 +537,7 @@ namespace simlinq {
         Determines whether any element of a sequence satisfies a condition.
     */
     template <typename container, typename unary_predicate>
-    bool any(const container &src, unary_predicate &&condition) {
+    bool Any(const container &src, unary_predicate &&condition) {
         for (auto it = std::begin(src); it != std::end(src); ++it)
         {
             if (condition(*it))
@@ -550,7 +550,7 @@ namespace simlinq {
         Concatenates two sequences.
     */
     template <typename container>
-    auto concat(const container &first, const container &second) {
+    auto Concat(const container &first, const container &second) {
         container result(std::size(first) + std::size(second));
 
         std::copy(std::begin(second),
@@ -565,7 +565,7 @@ namespace simlinq {
         Determines whether any element of a sequence satisfies a condition.
     */
     template <typename container, typename T>
-    bool contains(const container &src, const T &&value) {
+    bool Contains(const container &src, const T &&value) {
         return std::find(std::begin(src),
                         std::end(src),
                         value) != std::end(src);
@@ -575,7 +575,7 @@ namespace simlinq {
         Determines whether a sequence contains a specified element by using a specified binary predicate.
     */
     template <typename container, typename T, typename binary_predicate>
-    bool contains(const container &src, const T &&value, binary_predicate &&predicate) {
+    bool Contains(const container &src, const T &&value, binary_predicate &&predicate) {
         for (auto it = std::begin(src); it != std::end(src); ++it)
         {
             if (predicate(*it, value))
