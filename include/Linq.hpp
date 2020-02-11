@@ -225,13 +225,13 @@ namespace simlinq {
     /*
         Returns the last element of a sequence that satisfies a specified condition.
     */
-    template<typename container, unary_predicate condition>
-    auto Last(const container& c, condition&& cond) {
+    template<typename container, typename unary_predicate>
+    auto Last(const container& c, unary_predicate&& cond) {
         using optional_type = std::optional<typename container::value_type>;
 
-        auto res = std::find_last_if(std::begin(c),
-                                     std::end(c),
-                                     cond);
+        auto res = std::find_if(std::rbegin(c),
+                                std::rend(c),
+                                cond);
         return res == std::end(c)
                 ? optional_type()
                 : optional_type(*res);
@@ -253,10 +253,10 @@ namespace simlinq {
         Returns the last element of a sequence that satisfies a condition or a default value if no such element is found.
     */
     template<typename container, typename condition>
-    auto FirstOrDefault(const container& c, condition&& cond) {
-        auto res = std::find_last_if(std::begin(c),
-                                      std::end(c),
-                                      cond);
+    auto LastOrDefault(const container& c, condition&& cond) {
+        auto res = std::find_if(std::rbegin(c),
+                                std::rend(c),
+                                cond);
         return res == std::end(c)
                 ? typename container::value_type()
                 : *res;
@@ -480,19 +480,19 @@ namespace simlinq {
     /*
         Filters a sequence of values based on a predicate. Each element's index is used in the logic of the predicate function.
     */
-    template<typename container, typename binary_predicate>
-    auto Where(const container& src, binary_predicate&& predicate) {
-        container result;
-        size_t index = 0;
-        for (const auto& value : src) {
-            if (predicate(index, value)) { 
-                result.push_back(value);
-            }
-            index ++;
-        }
-        
-        return result;
-    }
+//    template<typename container, typename binary_predicate>
+//    auto Where(const container& src, binary_predicate&& predicate) {
+//        container result;
+//        size_t index = 0;
+//        for (const auto& value : src) {
+//            if (predicate(index, value)) { 
+//                result.push_back(value);
+//            }
+//            index ++;
+//        }
+//        
+//        return result;
+//    }
 
 
 //Zip<TFirst,TSecond,TResult>(IEnumerable<TFirst>, IEnumerable<TSecond>, Func<TFirst,TSecond,TResult>)
