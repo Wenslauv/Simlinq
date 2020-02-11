@@ -132,11 +132,12 @@ namespace simlinq {
         Returns the first element of a sequence.
     */
     template <typename container>
-    std::optional<typename container::value_type> First(const container &c) {
+    auto First(const container &src) {
         using optional_type = std::optional<typename container::value_type>;
-        std::begin(c) == std::end(c)
+        
+        return std::begin(src) == std::end(src)
             ? optional_type()
-            : optional_type(*(c.front()));
+            : optional_type(src.front());
     }
 
 

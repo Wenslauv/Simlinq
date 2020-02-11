@@ -78,4 +78,27 @@ SUITE(SimpleMethods)
         CHECK_EQUAL(count, 3);
         
     }
+    
+    TEST(First)
+    {
+        auto first = simlinq::First(data);
+        REQUIRE CHECK(first != std::nullopt);
+        CHECK_EQUAL(*first, data[0]);
+        
+        first = simlinq::First(empty);
+        CHECK(first == std::nullopt);
+    }
+    
+    TEST(FirstConditional)
+    {
+        auto positive = [](const auto& v) { return v > 0;};
+        auto first = simlinq::First(data, positive);
+        REQUIRE CHECK(first != std::nullopt);
+        CHECK_EQUAL(*first, 1);
+        
+        first = simlinq::First(empty, positive);
+        CHECK(first == std::nullopt);
+    }
+    
+    
 }
