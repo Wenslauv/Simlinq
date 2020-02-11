@@ -1,29 +1,55 @@
 #include <algorithm>
 #include <numeric>
 #include <optional>
+#include <unordered_set>
 
 
 namespace simlinq {
 
-//Aggregate<TSource,TAccumulate,TResult>(IEnumerable<TSource>, TAccumulate, Func<TAccumulate,TSource,TAccumulate>, Func<TAccumulate,TResult>)
-//Applies an accumulator function over a sequence. The specified seed value is used as the initial accumulator value, and the specified function is used to select the result value.
-//Aggregate<TSource,TAccumulate>(IEnumerable<TSource>, TAccumulate, Func<TAccumulate,TSource,TAccumulate>)
-//Applies an accumulator function over a sequence. The specified seed value is used as the initial accumulator value.
+
+    /*
+        Applies an accumulator function over a sequence. The specified seed value is used as the initial accumulator value, and the specified function is used to select the result value.
+    */
+    template<typename container, typename seed, typename accumulator, typename selector>
+    auto Aggregate(const container& src, seed&& s, accumulator&& acc, selector&& sel) {
+        decltype(acc) result(s);
+
+        for (const auto& value : src) {
+            acc(value, result);
+        }
+        return sel(result);
+    }
+
+
+    /*
+        Applies an accumulator function over a sequence. The specified seed value is used as the initial accumulator value.
+    */
+    template<typename container, typename seed, typename accumulator>
+    auto Aggregate(const container& src, seed&& s, accumulator&& acc) {
+        decltype(acc) result(s);
+
+        for (const auto& value : src) {
+            acc(value, result);
+        }
+        result;
+    }
+
 
     /*
         Applies an accumulator function over a sequence.
     */
-    template <typename container, typename aggregator>
-    auto Aggregate(const container &c, aggregator &&agr) {
+    template <typename container, typename accumulator>
+    auto Aggregate(const container &c, accumulator &&acc) {
         typename container::value_type result;
 
         for (const auto &value : c)
         {
-            agr(value, result);
+            acc(value, result);
         }
 
         return result;
     }
+
 
     /*
         Appends a value to the end of the sequence.
@@ -33,6 +59,7 @@ namespace simlinq {
         // TODO: this is bad container-specific implementation; should be rewritten.
         c.push_back(value);
     }
+
 
     /*
         Computes the average of a sequence.
@@ -51,29 +78,42 @@ namespace simlinq {
         return result;
     }
 
-//Computes the average of a sequence of Single values.
-//Average<TSource>(IEnumerable<TSource>, Func<TSource,Decimal>)
-//Computes the average of a sequence of Decimal values that are obtained by invoking a transform function on each element of the input sequence.
-//Average<TSource>(IEnumerable<TSource>, Func<TSource,Double>)
-//Computes the average of a sequence of Double values that are obtained by invoking a transform function on each element of the input sequence.
-//Average<TSource>(IEnumerable<TSource>, Func<TSource,Int32>)
-//Computes the average of a sequence of Int32 values that are obtained by invoking a transform function on each element of the input sequence.
-//Average<TSource>(IEnumerable<TSource>, Func<TSource,Int64>)
-//Computes the average of a sequence of Int64 values that are obtained by invoking a transform function on each element of the input sequence.
-//Average<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Decimal>>)
-//Computes the average of a sequence of nullable Decimal values that are obtained by invoking a transform function on each element of the input sequence.
-//Average<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Double>>)
-//Computes the average of a sequence of nullable Double values that are obtained by invoking a transform function on each element of the input sequence.
-//Average<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Int32>>)
-//Computes the average of a sequence of nullable Int32 values that are obtained by invoking a transform function on each element of the input sequence.
-//Average<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Int64>>)
-//Computes the average of a sequence of nullable Int64 values that are obtained by invoking a transform function on each element of the input sequence.
-//Average<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Single>>)
-//Computes the average of a sequence of nullable Single values that are obtained by invoking a transform function on each element of the input sequence.
-//Average<TSource>(IEnumerable<TSource>, Func<TSource,Single>)
-//Computes the average of a sequence of Single values that are obtained by invoking a transform function on each element of the input sequence.
-//Cast<TResult>(IEnumerable)
-//Casts the elements of an IEnumerable to the specified type.
+
+    /*
+        Computes the average of a sequence that are obtained by invoking a transform function on each element of the input sequence.
+    */
+    template <typename container, typename transform>
+    auto Average(const container &src, transform &&trans) {
+        using optional_type = std::optional<decltype(trans)>;
+
+        if (std::begin(src) == std::end(src)) {
+            return optional_type();
+        }
+
+        decltype(trans) result;
+        for (const auto &value : src)
+        {
+            result += trans(src);
+        }
+        result /= std::size(src);
+        return optional_type(result);
+    }
+
+
+    /*
+        Casts the elements of an IEnumerable to the specified type.
+    */
+    template<typename cast_type, typename container> 
+    auto Cast(const container& src) {
+        std::vector<cast_type> result;
+
+        std::transform(std::begin(src),
+                       std::end(src),
+                       std::begin(result),
+                       [](const auto& value) { return static_cast<cast_type>(value); }
+                       );
+        return result;
+    }
 
 //DefaultIfEmpty<TSource>(IEnumerable<TSource>)
 //Returns the elements of the specified sequence or the type parameter's default value in a singleton collection if the sequence is empty.
@@ -96,7 +136,7 @@ namespace simlinq {
         using optional_type = std::optional<typename container::value_type>;
         std::begin(c) == std::end(c)
             ? optional_type()
-            : optional_type(*(c.first()));
+            : optional_type(*(c.front()));
     }
 
 
@@ -123,7 +163,7 @@ namespace simlinq {
     auto FirstOrDefault(const container& c) {
         std::begin(c) == std::end(c)
             ? typename container::value_type()
-            : *(c.first());
+            : *(c.front());
     }
 
 
@@ -168,14 +208,61 @@ namespace simlinq {
 //Correlates the elements of two sequences based on matching keys. The default equality comparer is used to compare keys.
 //Join<TOuter,TInner,TKey,TResult>(IEnumerable<TOuter>, IEnumerable<TInner>, Func<TOuter,TKey>, Func<TInner,TKey>, Func<TOuter,TInner,TResult>, IEqualityComparer<TKey>)
 //Correlates the elements of two sequences based on matching keys. A specified IEqualityComparer<T> is used to compare keys.
-//Last<TSource>(IEnumerable<TSource>)
-//Returns the last element of a sequence.
-//Last<TSource>(IEnumerable<TSource>, Func<TSource,Boolean>)
-//Returns the last element of a sequence that satisfies a specified condition.
-//LastOrDefault<TSource>(IEnumerable<TSource>)
-//Returns the last element of a sequence, or a default value if the sequence contains no elements.
-//LastOrDefault<TSource>(IEnumerable<TSource>, Func<TSource,Boolean>)
-//Returns the last element of a sequence that satisfies a condition or a default value if no such element is found.
+
+    /*
+        Returns the last element of a sequence.
+    */
+    template <typename container>
+    auto Last(const container &c) {
+        using optional_type = std::optional<typename container::value_type>;
+
+        std::begin(c) == std::end(c)
+            ? optional_type()
+            : optional_type(*(c.back()));
+    }
+
+
+    /*
+        Returns the last element of a sequence that satisfies a specified condition.
+    */
+    template<typename container, unary_predicate condition>
+    auto Last(const container& c, condition&& cond) {
+        using optional_type = std::optional<typename container::value_type>;
+
+        auto res = std::find_last_if(std::begin(c),
+                                     std::end(c),
+                                     cond);
+        return res == std::end(c)
+                ? optional_type()
+                : optional_type(*res);
+    }
+
+
+    /* 
+        Returns the last element of a sequence, or a default value if the sequence contains no elements.
+    */
+    template<typename container>
+    auto LastOrDefault(const container& c) {
+        std::begin(c) == std::end(c)
+            ? typename container::value_type()
+            : *(c.back());
+    }
+
+
+    /*
+        Returns the last element of a sequence that satisfies a condition or a default value if no such element is found.
+    */
+    template<typename container, typename condition>
+    auto FirstOrDefault(const container& c, condition&& cond) {
+        auto res = std::find_last_if(std::begin(c),
+                                      std::end(c),
+                                      cond);
+        return res == std::end(c)
+                ? typename container::value_type()
+                : *res;
+    }
+
+
 //LongCount<TSource>(IEnumerable<TSource>)
 //Returns an Int64 that represents the total number of elements in a sequence.
 //LongCount<TSource>(IEnumerable<TSource>, Func<TSource,Boolean>)
@@ -241,10 +328,25 @@ namespace simlinq {
 //Sorts the elements of a sequence in descending order according to a key.
 //OrderByDescending<TSource,TKey>(IEnumerable<TSource>, Func<TSource,TKey>, IComparer<TKey>)
 //Sorts the elements of a sequence in descending order by using a specified comparer.
-//Prepend<TSource>(IEnumerable<TSource>, TSource)
-//Adds a value to the beginning of the sequence.
-//Reverse<TSource>(IEnumerable<TSource>)
-//Inverts the order of the elements in a sequence.
+
+    /*
+        Adds a value to the beginning of the sequence.
+    */
+    template<typename container>
+    void Prepend(const container& src, typename container::value_type&& value) {
+        src.insert(std::begin(src),
+                   value);
+    }
+
+
+    /*
+        Inverts the order of the elements in a sequence.
+    */
+    template<typename container>
+    void Reverse(container& src) {
+        std::reverse( std::begin(src), std::end(src) );
+    }
+
 //SelectMany<TSource,TCollection,TResult>(IEnumerable<TSource>, Func<TSource,IEnumerable<TCollection>>, Func<TSource,TCollection,TResult>)
 //Projects each element of a sequence to an IEnumerable<T>, flattens the resulting sequences into one sequence, and invokes a result selector function on each element therein.
 //SelectMany<TSource,TCollection,TResult>(IEnumerable<TSource>, Func<TSource,Int32,IEnumerable<TCollection>>, Func<TSource,TCollection,TResult>)
@@ -267,46 +369,31 @@ namespace simlinq {
 //Bypasses elements in a sequence as long as a specified condition is true and then returns the remaining elements.
 //SkipWhile<TSource>(IEnumerable<TSource>, Func<TSource,Int32,Boolean>)
 //Bypasses elements in a sequence as long as a specified condition is true and then returns the remaining elements. The element's index is used in the logic of the predicate function.
-//Sum(IEnumerable<Decimal>)
-//Computes the sum of a sequence of Decimal values.
-//Sum(IEnumerable<Double>)
-//Computes the sum of a sequence of Double values.
-//Sum(IEnumerable<Int32>)
-//Computes the sum of a sequence of Int32 values.
-//Sum(IEnumerable<Int64>)
-//Computes the sum of a sequence of Int64 values.
-//Sum(IEnumerable<Nullable<Decimal>>)
-//Computes the sum of a sequence of nullable Decimal values.
-//Sum(IEnumerable<Nullable<Double>>)
-//Computes the sum of a sequence of nullable Double values.
-//Sum(IEnumerable<Nullable<Int32>>)
-//Computes the sum of a sequence of nullable Int32 values.
-//Sum(IEnumerable<Nullable<Int64>>)
-//Computes the sum of a sequence of nullable Int64 values.
-//Sum(IEnumerable<Nullable<Single>>)
-//Computes the sum of a sequence of nullable Single values.
-//Sum(IEnumerable<Single>)
-//Computes the sum of a sequence of Single values.
-//Sum<TSource>(IEnumerable<TSource>, Func<TSource,Decimal>)
-//Computes the sum of the sequence of Decimal values that are obtained by invoking a transform function on each element of the input sequence.
-//Sum<TSource>(IEnumerable<TSource>, Func<TSource,Double>)
-//Computes the sum of the sequence of Double values that are obtained by invoking a transform function on each element of the input sequence.
-//Sum<TSource>(IEnumerable<TSource>, Func<TSource,Int32>)
-//Computes the sum of the sequence of Int32 values that are obtained by invoking a transform function on each element of the input sequence.
-//Sum<TSource>(IEnumerable<TSource>, Func<TSource,Int64>)
-//Computes the sum of the sequence of Int64 values that are obtained by invoking a transform function on each element of the input sequence.
-//Sum<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Decimal>>)
-//Computes the sum of the sequence of nullable Decimal values that are obtained by invoking a transform function on each element of the input sequence.
-//Sum<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Double>>)
-//Computes the sum of the sequence of nullable Double values that are obtained by invoking a transform function on each element of the input sequence.
-//Sum<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Int32>>)
-//Computes the sum of the sequence of nullable Int32 values that are obtained by invoking a transform function on each element of the input sequence.
-//Sum<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Int64>>)
-//Computes the sum of the sequence of nullable Int64 values that are obtained by invoking a transform function on each element of the input sequence.
-//Sum<TSource>(IEnumerable<TSource>, Func<TSource,Nullable<Single>>)
-//Computes the sum of the sequence of nullable Single values that are obtained by invoking a transform function on each element of the input sequence.
-//Sum<TSource>(IEnumerable<TSource>, Func<TSource,Single>)
-//Computes the sum of the sequence of Single values that are obtained by invoking a transform function on each element of the input sequence.
+
+    /*
+        Computes the sum of a sequence of Decimal values.
+    */
+    template<typename container>
+    auto Sum(const container& c) {
+        return std::accumulate(std::begin(c), 
+                               std::end(c),
+                               typename container::value_type());
+        
+    }
+
+
+    /*
+        Computes the sum of the sequence of Decimal values that are obtained by invoking a transform function on each element of the input sequence.
+    */
+    template<typename container, typename transform>        
+    auto Sum(const container& c, transform&& trans) {
+        return std::accumulate(std::begin(c),
+                               std::end(c),
+                               typename container::value_type(),
+                               trans);
+    }
+
+
 //TakeWhile<TSource>(IEnumerable<TSource>, Func<TSource,Boolean>)
 //Returns elements from a sequence as long as a specified condition is true.
 //TakeWhile<TSource>(IEnumerable<TSource>, Func<TSource,Int32,Boolean>)
@@ -343,21 +430,74 @@ namespace simlinq {
 //Creates a Lookup<TKey,TElement> from an IEnumerable<T> according to a specified key selector function.
 //ToLookup<TSource,TKey>(IEnumerable<TSource>, Func<TSource,TKey>, IEqualityComparer<TKey>)
 //Creates a Lookup<TKey,TElement> from an IEnumerable<T> according to a specified key selector function and key comparer.
-//Union<TSource>(IEnumerable<TSource>, IEnumerable<TSource>)
-//Produces the set union of two sequences by using the default equality comparer.
-//Union<TSource>(IEnumerable<TSource>, IEnumerable<TSource>, IEqualityComparer<TSource>)
-//Produces the set union of two sequences by using a specified IEqualityComparer<T>.
-//Where<TSource>(IEnumerable<TSource>, Func<TSource,Boolean>)
-//Filters a sequence of values based on a predicate.
-//Where<TSource>(IEnumerable<TSource>, Func<TSource,Int32,Boolean>)
-//Filters a sequence of values based on a predicate. Each element's index is used in the logic of the predicate function.
+
+    /*
+        Produces the set union of two sequences by using the default equality comparer.
+    */
+    template<typename container>
+    auto Union(const container& first, const container& second) {
+        std::unordered_set<typename container::value_type> result(std::begin(first), std::end(second));
+
+        std::copy(std::begin(second), 
+                  std::end(second),
+                  std::inserter(result, std::end(result))
+                  );
+        return result;
+    }
+
+
+    /*
+        Produces the set union of two sequences by using a specified IEqualityComparer<T>.
+    */
+    template<typename container, typename comparator>
+    auto Union(const container& first, const container& second, comparator&& comp) {
+        using value_type = typename container::value_type;
+        std::unordered_set<value_type, std::hash<value_type>, decltype(comp)> result(std::begin(first), std::end(second));
+
+        std::copy(std::begin(second), 
+                  std::end(second),
+                  std::inserter(result, std::end(result))
+                  );
+        return result;
+    }
+
+
+    /*
+        Filters a sequence of values based on a predicate.
+    */
+    template<typename container, typename unary_predicate>
+    auto Where(const container& src, unary_predicate&& predicate) {
+        container result;
+
+        std::copy_if(std::begin(src),
+                     std::end(src),
+                     std::back_inserter(result),
+                     predicate);
+        return result;
+    }
+
+
+    /*
+        Filters a sequence of values based on a predicate. Each element's index is used in the logic of the predicate function.
+    */
+    template<typename container, typename binary_predicate>
+    auto Where(const container& src, binary_predicate&& predicate) {
+        container result;
+        size_t index = 0;
+        for (const auto& value : src) {
+            if (predicate(index, value)) { 
+                result.push_back(value);
+            }
+            index ++;
+        }
+        
+        return result;
+    }
+
+
 //Zip<TFirst,TSecond,TResult>(IEnumerable<TFirst>, IEnumerable<TSecond>, Func<TFirst,TSecond,TResult>)
 //Applies a specified function to the corresponding elements of two sequences, producing a sequence of the results.
 
-// #include <algorithm>
-// #include <numeric>
-
-// namespace simlinq {
 
     namespace detail {
         
