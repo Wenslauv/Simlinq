@@ -270,6 +270,19 @@ namespace simlinq {
     
     
     /*
+        Returns the maximum value in a sequence.
+    */
+    template <typename container>
+    auto Max(const container &src) {
+        using optional_type = std::optional<typename container::value_type>;
+        
+        return std::begin(src) == std::end(src)
+            ? optional_type()
+            : optional_type(*(std::max_element(std::begin(src), std::end(src))));
+    }
+    
+    
+    /*
         Invokes a transform function on each element of a generic sequence and returns the maximum resulting value.
     */
     template<typename container, typename transform>
@@ -485,30 +498,18 @@ namespace simlinq {
 //        container result;
 //        size_t index = 0;
 //        for (const auto& value : src) {
-//            if (predicate(index, value)) { 
+//            if (predicate(index, value)) {
 //                result.push_back(value);
 //            }
 //            index ++;
 //        }
-//        
+//
 //        return result;
 //    }
 
 
 //Zip<TFirst,TSecond,TResult>(IEnumerable<TFirst>, IEnumerable<TSecond>, Func<TFirst,TSecond,TResult>)
 //Applies a specified function to the corresponding elements of two sequences, producing a sequence of the results.
-
-
-    namespace detail {
-        
-        template <typename iter>
-        const auto &max(const iter &begin, const iter &end) {
-            if (begin == end)
-                assert(false);
-            return *std::max_element(begin, end);
-        }
-    
-    } // namespace detail
 
     /*
         Determines whether all elements of a sequence satisfy a condition.
@@ -642,15 +643,7 @@ namespace simlinq {
                     });
         return result;
     }
-
-    /*
-        Returns the maximum value in a sequence.
-    */
-    template <typename container>
-    const auto &max(const container &src) {
-        return detail::max(std::begin(src),
-                        std::end(src));
-    }
+    
 
     /*
         Projects each element of a sequence into a new form by incorporating the element's index.
