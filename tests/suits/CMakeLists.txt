@@ -7,6 +7,7 @@ set(SOURCES
     optional.cpp
     generating.cpp
     check.cpp
+    characteristic.cpp
 )
 
 add_library(suits STATIC

@@ -71,21 +71,7 @@ SUITE(OptionalMethods)
         max = simlinq::Max(empty, transform);
         CHECK(max == std::nullopt);
     }
-    
-    TEST(Count)
-    {
-        auto count = simlinq::count(data);
-        CHECK_EQUAL(count, 8);
-        
-        /* with lambda */
-        count = simlinq::count(data, [](const auto& v) { return v % 2 != 0; });
-        CHECK_EQUAL(count, 5);
-        
-        /* with function pointer */
-        count = simlinq::count(data, isEven);
-        CHECK_EQUAL(count, 3);
-        
-    }
+
     
     TEST(First)
     {
@@ -153,5 +139,19 @@ SUITE(OptionalMethods)
         CHECK_EQUAL(simlinq::LastOrDefault(data, isEven), 6);
         CHECK_EQUAL(simlinq::LastOrDefault(data, isZero), int());
         CHECK_EQUAL(simlinq::LastOrDefault(empty, isOdd), int());
+    }
+    
+    TEST(ElementAt)
+    {
+        CHECK(*simlinq::ElementAt(data, 3) == 5);
+        CHECK(simlinq::ElementAt(data, -1) == std::nullopt);
+        CHECK(simlinq::ElementAt(data, 10) == std::nullopt);
+    }
+    
+    TEST(ElementAtOrDefault)
+    {
+        CHECK_EQUAL(simlinq::ElementAtOrDefault(data, 3), 5);
+        CHECK_EQUAL(simlinq::ElementAtOrDefault(data, -1), int());
+        CHECK_EQUAL(simlinq::ElementAtOrDefault(data, 10), int());
     }
 }

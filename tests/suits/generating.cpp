@@ -3,6 +3,7 @@
 #include <UnitTest++/UnitTest++.h>
 
 #include <vector>
+#include <string>
 
 
 SUITE(GeneratingMethods) {
@@ -32,6 +33,42 @@ SUITE(GeneratingMethods) {
         CHECK(simlinq::Concat(second, empty) == second);
     }
     
+    
+    TEST(Distinct)
+    {
+        CHECK(simlinq::Distinct(first, second) == std::vector<int>({1,2}));
+        CHECK(simlinq::Distinct(first, empty) == first);
+    }
+    
+    
+    TEST(DistinctComparer)
+    {
+        CHECK(simlinq::Distinct(first,
+                                second,
+                                [](int l, int r) { return l*2 < r; })
+              == std::vector<int>({1,5}));
+    }
+    
+    
+    TEST(Empty)
+    {
+        using vector_t = std::vector<int>;
+        CHECK(simlinq::Empty<vector_t>() == vector_t());
+    }
+    
+    
+    TEST(Intersect)
+    {
+        CHECK(simlinq::Intersect(first, second) == std::vector<int>({3,4,5}));
+        CHECK(simlinq::Intersect(first, empty) == empty);
+        CHECK(simlinq::Intersect(second, empty) == empty);
+    }
+    
+    
+    TEST(IntersectComparer)
+    {
+        CHECK(simlinq::Intersect(first, second, [](int f, int s){ return f*2 < s; }) == std::vector<int>({2, 3, 4}));
+    }
     
     TEST(Repeat)
     {
@@ -85,5 +122,18 @@ SUITE(GeneratingMethods) {
     TEST(WherePredicate)
     {
         /* Stub */
+    }
+    
+    
+    TEST(Zip)
+    {
+        std::vector<std::string> strings{ "first", "second", "third" };
+        auto zip = simlinq::Zip(first,
+                                strings,
+                                [](int f, const std::string& s)
+                                {
+                                    return std::to_string(f) + " : " + s;
+                                });
+        CHECK(zip == std::vector<std::string>({ "1 : first", "2 : second", "3 : third" }));
     }
 }

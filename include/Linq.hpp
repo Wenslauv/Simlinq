@@ -2,10 +2,58 @@
 #include <numeric>
 #include <optional>
 #include <unordered_set>
-
+#include <vector>
+#include <string>
 
 namespace simlinq {
 
+    
+    namespace detail {
+        
+        template<typename container>
+        bool is_sorted(const container& c) {
+            return std::is_sorted(std::begin(c), std::end(c));
+        }
+        
+        template<typename container, typename binary_predicate>
+        bool is_sorted(const container& c, binary_predicate&& comparer) {
+            return std::is_sorted(std::begin(c), std::end(c), comparer);
+        }
+        
+        template<typename container>
+        auto copy_sort(container src) {
+            std::sort(std::begin(src), std::end(src));
+            return src;
+        }
+        
+        template<typename container, typename binary_predicate>
+        auto copy_sort(container src, binary_predicate&& comparer) {
+            std::sort(std::begin(src), std::end(src), comparer);
+            return src;
+        }
+        
+        template<typename container>
+        inline auto distinct_impl(const container& f, const container& s) {
+            container r;
+            std::set_difference(std::begin(f), std::end(f),
+                                std::begin(s), std::end(s),
+                                std::back_inserter(r));
+            return r;
+        }
+        
+        template<typename container, typename binary_predicate>
+        inline auto distinct_impl(const container& f, const container& s, binary_predicate&& comparer) {
+            container r;
+            std::set_difference(std::begin(f), std::end(f),
+                                std::begin(s), std::end(s),
+                                std::back_inserter(r),
+                                comparer);
+            return r;
+        }
+
+    }
+    
+    
 
     /*
         Applies an accumulator function over a sequence. The specified seed value is used as the initial accumulator value, and the specified function is used to select the result value.
@@ -119,15 +167,64 @@ namespace simlinq {
 //Returns the elements of the specified sequence or the type parameter's default value in a singleton collection if the sequence is empty.
 //DefaultIfEmpty<TSource>(IEnumerable<TSource>, TSource)
 //Returns the elements of the specified sequence or the specified value in a singleton collection if the sequence is empty.
-//Distinct<TSource>(IEnumerable<TSource>)
-//Returns distinct elements from a sequence by using the default equality comparer to compare values.
-//Distinct<TSource>(IEnumerable<TSource>, IEqualityComparer<TSource>)
-//Returns distinct elements from a sequence by using a specified IEqualityComparer<T> to compare values.
-//ElementAt<TSource>(IEnumerable<TSource>, Int32)
-//Returns the element at a specified index in a sequence.
-//ElementAtOrDefault<TSource>(IEnumerable<TSource>, Int32)
-//Returns the element at a specified index in a sequence or a default value if the index is out of range.
 
+    /*
+        Returns distinct elements from a sequence by using the default equality comparer to compare values.
+     */
+    template<typename container>
+    auto Distinct(const container& first, const container& second) {
+        using namespace detail;
+        
+        if (is_sorted(first) and is_sorted(second)) {
+            return distinct_impl(first, second);
+        }
+        
+        return distinct_impl( copy_sort(first),
+                              copy_sort(second));
+    }
+    
+    
+    /*
+        Returns distinct elements from a sequence by using a specified IEqualityComparer<T> to compare values.
+     */
+    template<typename container, typename binary_predicate>
+    auto Distinct(const container& first, const container& second, binary_predicate&& comparer) {
+        using namespace detail;
+        
+        if (is_sorted(first, comparer) and is_sorted(second, comparer)) {
+            return distinct_impl(first, second, comparer);
+        }
+        
+        return distinct_impl( copy_sort(first, comparer),
+                              copy_sort(second, comparer),
+                              comparer);
+    }
+    
+    
+    /*
+        Returns the element at a specified index in a sequence.
+     */
+    template<typename container>
+    auto ElementAt(const container& src, int index) {
+        using optional_type = std::optional<typename container::value_type>;
+        
+        return (index < std::size(src) and index >= 0)
+            ? optional_type(*(std::begin(src) + index))
+            : optional_type();
+    }
+    
+    
+    /*
+        Returns the element at a specified index in a sequence or a default value if the index is out of range.
+     */
+    template<typename container>
+    auto ElementAtOrDefault(const container& src, int index) {
+        return (index < std::size(src) and index >= 0)
+            ? *(std::begin(src) + index)
+            : typename container::value_type();
+    }
+    
+    
     /*
         Returns the first element of a sequence.
     */
@@ -201,10 +298,49 @@ namespace simlinq {
 //Correlates the elements of two sequences based on equality of keys and groups the results. The default equality comparer is used to compare keys.
 //GroupJoin<TOuter,TInner,TKey,TResult>(IEnumerable<TOuter>, IEnumerable<TInner>, Func<TOuter,TKey>, Func<TInner,TKey>, Func<TOuter,IEnumerable<TInner>,TResult>, IEqualityComparer<TKey>)
 //Correlates the elements of two sequences based on key equality and groups the results. A specified IEqualityComparer<T> is used to compare keys.
-//Intersect<TSource>(IEnumerable<TSource>, IEnumerable<TSource>)
-//Produces the set intersection of two sequences by using the default equality comparer to compare values.
-//Intersect<TSource>(IEnumerable<TSource>, IEnumerable<TSource>, IEqualityComparer<TSource>)
-//Produces the set intersection of two sequences by using the specified IEqualityComparer<T> to compare values.
+    
+    /*
+        Produces the set intersection of two sequences by using the default equality comparer to compare values.
+     */
+    template<typename container>
+    auto Intersect(const container& first, const container& second) {
+        auto prepare = [](auto src) {
+             std::sort(std::begin(src), std::end(src));
+            return src;
+        };
+
+        container first_c = prepare(first);
+        container second_c = prepare(second);
+        
+        container result;
+        std::set_intersection(std::begin(first_c), std::end(first_c),
+                              std::begin(second_c), std::end(second_c),
+                              std::back_inserter(result));
+        return result;
+    }
+    
+    
+    /*
+        Produces the set intersection of two sequences by using the specified IEqualityComparer<T> to compare values.
+     */
+    template<typename container, typename comparator>
+    auto Intersect(const container& first, const container& second, comparator&& comp) {
+        auto prepare = [&comp](auto src) {
+            std::sort(std::begin(src), std::end(src), comp);
+            return src;
+        };
+
+        container first_c = prepare(first);
+        container second_c = prepare(second);
+        
+        container result;
+        std::set_intersection(std::begin(first_c), std::end(first_c),
+                              std::begin(second_c), std::end(second_c),
+                              std::back_inserter(result),
+                              comp);
+        return result;
+    }
+    
 //Join<TOuter,TInner,TKey,TResult>(IEnumerable<TOuter>, IEnumerable<TInner>, Func<TOuter,TKey>, Func<TInner,TKey>, Func<TOuter,TInner,TResult>)
 //Correlates the elements of two sequences based on matching keys. The default equality comparer is used to compare keys.
 //Join<TOuter,TInner,TKey,TResult>(IEnumerable<TOuter>, IEnumerable<TInner>, Func<TOuter,TKey>, Func<TInner,TKey>, Func<TOuter,TInner,TResult>, IEqualityComparer<TKey>)
@@ -509,20 +645,40 @@ namespace simlinq {
 //    }
 
 
-//Zip<TFirst,TSecond,TResult>(IEnumerable<TFirst>, IEnumerable<TSecond>, Func<TFirst,TSecond,TResult>)
-//Applies a specified function to the corresponding elements of two sequences, producing a sequence of the results.
+
+    /*
+        Applies a specified function to the corresponding elements of two sequences, producing a sequence of the results.
+     */
+    template<typename first_container,
+             typename second_container,
+             typename binary_predicate>
+    auto Zip(const first_container& first, const second_container& second, binary_predicate&& predicate) {
+        /*
+            TODO: Further investigations required
+         */
+        std::vector<std::string> result;
+        
+        auto count = std::min(std::size(first), std::size(second));
+        
+        auto fit = std::begin(first);
+        auto sit = std::begin(second);
+        for (;
+             fit < std::begin(first) + count;
+             ++fit, ++sit) {
+            result.push_back( predicate(*fit, *sit));
+        }
+        
+        return result;
+    }
 
     /*
         Determines whether all elements of a sequence satisfy a condition.
      */
     template <typename container, typename unary_predicate>
     bool All(const container &src, unary_predicate &&condition) {
-        for (auto it = std::begin(src); it != std::end(src); ++it)
-        {
-            if (not condition(*it))
-                return false;
-        }
-        return true;
+        return std::all_of(std::begin(src),
+                           std::end(src),
+                           condition);
     }
 
     /*
@@ -589,15 +745,15 @@ namespace simlinq {
         Returns the number of elements in a sequence.
     */
     template <typename container>
-    auto count(const container &src) {
-        return std::distance(std::begin(src), std::end(src));
+    auto Count(const container &src) {
+        return std::size(src);
     }
 
     /*
         Returns a number that represents how many elements in the specified sequence satisfy a condition.
     */
     template <typename container, typename unary_predicate>
-    auto count(const container &src, unary_predicate &&condition) {
+    auto Count(const container &src, unary_predicate &&condition) {
         return std::count_if(std::begin(src),
                             std::end(src),
                             condition);
@@ -607,7 +763,7 @@ namespace simlinq {
         Returns an empty IEnumerable<T> that has the specified type argument.
     */
     template <typename T>
-    auto empty() {
+    auto Empty() {
         return T{};
     }
 
