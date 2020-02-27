@@ -154,4 +154,6 @@ SUITE(OptionalMethods)
         CHECK_EQUAL(simlinq::ElementAtOrDefault(data, -1), int());
         CHECK_EQUAL(simlinq::ElementAtOrDefault(data, 10), int());
     }
+    
+    
 }

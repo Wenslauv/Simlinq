@@ -27,4 +27,16 @@ SUITE(CharacteristicMethods)
     }
     
     
+    TEST(LongCount)
+    {
+        CHECK_EQUAL(simlinq::LongCount(data), 8);
+        CHECK_EQUAL(simlinq::LongCount(empty), 0);
+    }
+    
+    TEST(LongCountConditional)
+    {
+        CHECK_EQUAL(simlinq::LongCount(data,isEven), 3);
+        CHECK_EQUAL(simlinq::LongCount(empty, isZero), 0);
+    }
+    
 }

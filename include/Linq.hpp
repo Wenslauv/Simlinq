@@ -163,11 +163,29 @@ namespace simlinq {
         return result;
     }
 
-//DefaultIfEmpty<TSource>(IEnumerable<TSource>)
-//Returns the elements of the specified sequence or the type parameter's default value in a singleton collection if the sequence is empty.
-//DefaultIfEmpty<TSource>(IEnumerable<TSource>, TSource)
-//Returns the elements of the specified sequence or the specified value in a singleton collection if the sequence is empty.
+    
+    /*
+        Returns the elements of the specified sequence or the type parameter's default value in a singleton collection if the sequence is empty.
+     */
+    template<typename container>
+    auto DefaultIfEmpty(const container& src) {
+        return std::size(src) != 0
+            ? src
+            : container({ typename container::value_type{} });
+    }
+    
+    
+    /*
+        Returns the elements of the specified sequence or the specified value in a singleton collection if the sequence is empty.
+     */
+    template<typename container>
+    auto DefaultIfEmpty(const container& src, typename container::value_type value) {
+        return std::size(src) != 0
+            ? src
+            : container({ value });
+    }
 
+    
     /*
         Returns distinct elements from a sequence by using the default equality comparer to compare values.
      */
@@ -400,12 +418,25 @@ namespace simlinq {
     }
 
 
-//LongCount<TSource>(IEnumerable<TSource>)
-//Returns an Int64 that represents the total number of elements in a sequence.
-//LongCount<TSource>(IEnumerable<TSource>, Func<TSource,Boolean>)
-//Returns an Int64 that represents how many elements in a sequence satisfy a condition.
-    
-    
+    /*
+        Returns an Int64 that represents the total number of elements in a sequence.
+     */
+    template <typename container>
+    long long LongCount(const container &src) {
+        return static_cast<long long>( std::size(src) );
+    }
+
+    /*
+        Returns an Int64 that represents how many elements in a sequence satisfy a condition.
+     */
+    template <typename container, typename unary_predicate>
+    long long LongCount(const container &src, unary_predicate &&condition) {
+        return static_cast<long long>(std::count_if(std::begin(src),
+                                                    std::end(src),
+                                                    condition));
+    }
+
+        
     /*
         Returns the maximum value in a sequence.
     */
@@ -468,8 +499,23 @@ namespace simlinq {
         return optional_type(min_value);
     }
 
-//OfType<TResult>(IEnumerable)
-//Filters the elements of an IEnumerable based on a specified type.
+    
+    /*
+        Filters the elements of an IEnumerable based on a specified type.
+     */
+    template<typename required_type, typename container>
+    auto OfType(const container& src) {
+        container result;
+        
+    std::copy_if(std::begin(src),
+                 std::end(src),
+                 std::back_inserter(result),
+                 [](auto& v) { return dynamic_cast<required_type>(v) != nullptr; }
+                 );
+        return result;
+    }
+    
+    
 //OrderBy<TSource,TKey>(IEnumerable<TSource>, Func<TSource,TKey>)
 //Sorts the elements of a sequence in ascending order according to a key.
 //OrderBy<TSource,TKey>(IEnumerable<TSource>, Func<TSource,TKey>, IComparer<TKey>)

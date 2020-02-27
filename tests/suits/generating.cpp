@@ -33,6 +33,17 @@ SUITE(GeneratingMethods) {
         CHECK(simlinq::Concat(second, empty) == second);
     }
     
+    TEST(DefaultIfEmpty)
+    {
+        CHECK(simlinq::DefaultIfEmpty(first) == first);
+        CHECK(simlinq::DefaultIfEmpty(empty) == std::vector<int>({0}));
+    }
+    
+    TEST(DefaultIfEmptyValue)
+    {
+        CHECK(simlinq::DefaultIfEmpty(first) == first);
+        CHECK(simlinq::DefaultIfEmpty(empty, 5) == std::vector<int>({5}));
+    }
     
     TEST(Distinct)
     {
@@ -68,6 +79,23 @@ SUITE(GeneratingMethods) {
     TEST(IntersectComparer)
     {
         CHECK(simlinq::Intersect(first, second, [](int f, int s){ return f*2 < s; }) == std::vector<int>({2, 3, 4}));
+    }
+    
+    TEST(OfType)
+    {
+        struct A { virtual void do_smth() {}; virtual ~A() = default; };
+        struct B : public A {};
+        struct C : public A {};
+        
+        std::vector<A*> data{ new B, new B, new C, new B };
+        
+        CHECK(simlinq::OfType<C*>(data).size() == 1);
+        CHECK(simlinq::OfType<B*>(data).size() == 3);
+        CHECK(simlinq::OfType<A*>(data).size() == 4);
+        
+        for (auto& d : data) {
+            delete d;
+        }
     }
     
     TEST(Repeat)
