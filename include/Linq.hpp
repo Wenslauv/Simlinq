@@ -516,8 +516,23 @@ namespace simlinq {
     }
     
     
-//OrderBy<TSource,TKey>(IEnumerable<TSource>, Func<TSource,TKey>)
-//Sorts the elements of a sequence in ascending order according to a key.
+    /*
+        Sorts the elements of a sequence in ascending order according to a key.
+     */
+    template<typename container, typename predicate>
+    auto OrderBy(const container& src, predicate&& key_func) {
+        container result(std::begin(src), std::end(src));
+        
+        auto comparer = [&key_func]
+                        (const auto& l, const auto& r)
+                        { return key_func(l) < key_func(r); };
+        std::sort(std::begin(result),
+                  std::end(result),
+                  comparer);
+        
+        return result;
+    }
+    
 //OrderBy<TSource,TKey>(IEnumerable<TSource>, Func<TSource,TKey>, IComparer<TKey>)
 //Sorts the elements of a sequence in ascending order by using a specified comparer.
 //OrderByDescending<TSource,TKey>(IEnumerable<TSource>, Func<TSource,TKey>)
@@ -551,10 +566,35 @@ namespace simlinq {
 //Projects each element of a sequence to an IEnumerable<T> and flattens the resulting sequences into one sequence.
 //SelectMany<TSource,TResult>(IEnumerable<TSource>, Func<TSource,Int32,IEnumerable<TResult>>)
 //Projects each element of a sequence to an IEnumerable<T>, and flattens the resulting sequences into one sequence. The index of each source element is used in the projected form of that element.
-//Single<TSource>(IEnumerable<TSource>)
-//Returns the only element of a sequence, and throws an exception if there is not exactly one element in the sequence.
-//Single<TSource>(IEnumerable<TSource>, Func<TSource,Boolean>)
-//Returns the only element of a sequence that satisfies a specified condition, and throws an exception if more than one such element exists.
+    
+    
+    /*
+        Returns the only element of a sequence, and throws an exception if there is not exactly one element in the sequence.
+     */
+    template<typename container>
+    auto Single(const container& src) {
+        using optional_type = std::optional<typename container::value_type>;
+        
+        return std::size(src) == 1
+            ? optional_type(src.front())
+            : optional_type();
+    }
+    
+
+    /*
+        Returns the only element of a sequence that satisfies a specified condition, and throws an exception if more than one such element exists.
+     */
+    template<typename container, typename unary_predicate>
+    auto Single(const container& src, unary_predicate&& condition) {
+        using optional_type = std::optional<typename container::value_type>;
+        
+        return std::count_if(std::begin(src), std::end(src), condition) == 1
+            ? optional_type(*std::find_if(std::begin(src), std::end(src), condition))
+            : optional_type();
+        
+    }
+
+    
 //SingleOrDefault<TSource>(IEnumerable<TSource>)
 //Returns the only element of a sequence, or a default value if the sequence is empty; this method throws an exception if there is more than one element in the sequence.
 //SingleOrDefault<TSource>(IEnumerable<TSource>, Func<TSource,Boolean>)

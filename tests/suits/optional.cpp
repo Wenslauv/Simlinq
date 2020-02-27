@@ -18,7 +18,7 @@ SUITE(OptionalMethods)
      }
      
      bool isOdd(const int& v) {
-         return v % 2 != -0;
+         return v % 2 != 0;
      }
      
      bool isZero(const int& v) {
@@ -153,6 +153,32 @@ SUITE(OptionalMethods)
         CHECK_EQUAL(simlinq::ElementAtOrDefault(data, 3), 5);
         CHECK_EQUAL(simlinq::ElementAtOrDefault(data, -1), int());
         CHECK_EQUAL(simlinq::ElementAtOrDefault(data, 10), int());
+    }
+    
+    TEST(Single)
+    {
+        std::vector<int> single { 10 };
+        std::vector<int> multiple { 10, 20 };
+        
+        auto s = simlinq::Single(single);
+        REQUIRE CHECK(s != std::nullopt);
+        CHECK_EQUAL(*s, 10);
+        
+        s = simlinq::Single(multiple);
+        CHECK(s == std::nullopt);
+    }
+    
+    TEST(SingleCondition)
+    {
+        std::vector<int> single { 10, 15 };
+        std::vector<int> multiple { 10, 15, 20, 25 };
+        
+        auto s = simlinq::Single(single, [](int v) { return v % 2 == 0;} );
+        REQUIRE CHECK(s != std::nullopt);
+        CHECK_EQUAL(*s, 15);
+        
+        s = simlinq::Single(multiple, isOdd);
+        CHECK(s == std::nullopt);
     }
     
     

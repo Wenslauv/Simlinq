@@ -98,6 +98,35 @@ SUITE(GeneratingMethods) {
         }
     }
     
+    TEST(OrderBy)
+    {
+        struct S {
+            std::string name;
+            int age;
+        };
+            
+        using storage = std::vector<S>;
+        
+        auto compare = [](const std::vector<S>& l, const std::vector<S>& r) {
+            if (std::size(l) != std::size(r))
+                return false;
+            
+            for (int i = 0; i < std::size(l); ++i) {
+                if ((l[i].name != r[i].name) or (l[i].age != r[i].age))
+                    return false;
+            }
+            
+            return true;
+        };
+
+        
+        storage data{ {"C", 10}, {"A", 15 }, {"B", 20 } };
+        storage expected{  {"A", 15 }, {"B", 20 }, {"C", 10} };
+        
+        auto key = [](const S& s) { return s.name; };
+        CHECK_EQUAL(compare(simlinq::OrderBy(data, key), expected), true);
+    }
+    
     TEST(Repeat)
     {
         using type_t = std::vector<int>;
