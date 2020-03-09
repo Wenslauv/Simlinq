@@ -595,19 +595,67 @@ namespace simlinq {
     }
 
     
-//SingleOrDefault<TSource>(IEnumerable<TSource>)
-//Returns the only element of a sequence, or a default value if the sequence is empty; this method throws an exception if there is more than one element in the sequence.
-//SingleOrDefault<TSource>(IEnumerable<TSource>, Func<TSource,Boolean>)
-//Returns the only element of a sequence that satisfies a specified condition or a default value if no such element exists; this method throws an exception if more than one element satisfies the condition.
-//Skip<TSource>(IEnumerable<TSource>, Int32)
-//Bypasses a specified number of elements in a sequence and then returns the remaining elements.
-//SkipWhile<TSource>(IEnumerable<TSource>, Func<TSource,Boolean>)
-//Bypasses elements in a sequence as long as a specified condition is true and then returns the remaining elements.
-//SkipWhile<TSource>(IEnumerable<TSource>, Func<TSource,Int32,Boolean>)
-//Bypasses elements in a sequence as long as a specified condition is true and then returns the remaining elements. The element's index is used in the logic of the predicate function.
+    /*
+        Returns the only element of a sequence, or a default value if the sequence is empty; this method throws an exception if there is more than one element in the sequence.
+    */
+    template<typename container>
+    auto SingleOrDefault(const container& src) {
+        return std::size(src) == 1
+        ? src.front()
+        : typename container::value_type();
+    }
+    
+    
+    /*
+        Returns the only element of a sequence that satisfies a specified condition or a default value if no such element exists; this method throws an exception if more than one element satisfies the condition.
+    */
+    template<typename container, typename unary_predicate>
+    auto SingleOrDefault(const container& src, unary_predicate&& condition) {
+        return std::count_if(std::begin(src), std::end(src), condition) == 1
+            ? *std::find_if(std::begin(src), std::end(src), condition)
+            : typename container::value_type();
+        
+    }
+    
 
     /*
-        Computes the sum of a sequence of Decimal values.
+        Bypasses a specified number of elements in a sequence and then returns the remaining elements.
+     */
+    template<typename container>
+    auto Skip(const container& src, size_t count) {
+        return (count <= std::size(src))
+            ? container(std::begin(src) + count, std::end(src))
+            : container();
+    }
+
+
+    /*
+        Bypasses elements in a sequence as long as a specified condition is true and then returns the remaining elements.
+     */
+    template<typename container, typename unary_predicate>
+    auto SkipWhile(const container& src, unary_predicate&& predicate) {
+        return container(std::find_if_not(std::begin(src), std::end(src), predicate),
+                         std::end(src));
+    }
+    
+
+    /*
+        Bypasses elements in a sequence as long as a specified condition is true and then returns the remaining elements. The element's index is used in the logic of the predicate function.
+     */
+    template<typename index_t, typename container, typename binary_predicate>
+    auto SkipWhile(const container& src, binary_predicate&& predicate) {
+        auto f = std::begin(src);
+        for (index_t ind = 0; ind < std::size(src); ++ind, f++) {
+            if (not predicate(ind, *f)) {
+                break;
+            }
+        };
+        return container(f, std::end(src));
+    }
+    
+    
+    /*
+        Computes the sum of a sequence.
     */
     template<typename container>
     auto Sum(const container& c) {

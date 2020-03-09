@@ -168,17 +168,36 @@ SUITE(OptionalMethods)
         CHECK(s == std::nullopt);
     }
     
-    TEST(SingleCondition)
+    TEST(SingleConditional)
     {
         std::vector<int> single { 10, 15 };
         std::vector<int> multiple { 10, 15, 20, 25 };
         
-        auto s = simlinq::Single(single, [](int v) { return v % 2 == 0;} );
+        auto s = simlinq::Single(single, isOdd );
         REQUIRE CHECK(s != std::nullopt);
         CHECK_EQUAL(*s, 15);
         
         s = simlinq::Single(multiple, isOdd);
         CHECK(s == std::nullopt);
+    }
+    
+    TEST(SingleOrDefault)
+    {
+        std::vector<int> single { 10 };
+        std::vector<int> multiple { 10, 20 };
+        
+        CHECK_EQUAL(simlinq::SingleOrDefault(single), 10);
+        CHECK_EQUAL(simlinq::SingleOrDefault(multiple), int());
+        
+    }
+    
+    TEST(SingleOrDefaultConditional)
+    {
+        std::vector<int> single { 10, 15 };
+        std::vector<int> multiple { 10, 15, 20, 25 };
+        
+        CHECK_EQUAL(simlinq::SingleOrDefault(single, isEven ), 10);
+        CHECK_EQUAL(simlinq::SingleOrDefault(multiple, isOdd), int());
     }
     
     

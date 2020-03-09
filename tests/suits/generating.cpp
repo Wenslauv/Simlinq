@@ -18,7 +18,7 @@ SUITE(GeneratingMethods) {
     }
     
     bool isOdd(const int& v) {
-        return v % 2 != -0;
+        return v % 2 != 0;
     }
     
     bool isZero(const int& v) {
@@ -135,6 +135,33 @@ SUITE(GeneratingMethods) {
         CHECK(simlinq::Repeat<type_t>(5,0) == empty);
     }
     
+    TEST(Skip)
+    {
+        std::vector<int> v{ 1,2,3,4,5};
+        
+        CHECK(simlinq::Skip(v, 3) == std::vector<int>({4,5}));
+        CHECK(simlinq::Skip(v, v.size()) == std::vector<int>());
+        CHECK(simlinq::Skip(v, 10) == std::vector<int>());
+    }
+    
+    TEST(SkipWhile)
+    {
+        std::vector<int> oneEven { 1, 3, 5, 6, 7, 8};
+        CHECK(simlinq::SkipWhile(oneEven, isOdd) == std::vector<int>({6,7,8}));
+        
+        std::vector<int> noEven { 1, 3, 5, 7 };
+        CHECK(simlinq::SkipWhile(noEven, isOdd) == std::vector<int>());
+    }
+    
+    TEST(SkipWhileIndexed)
+    {
+        std::vector<int> oneEven { 1, 3, 5, 6, 7, 8};
+        auto condition = [](uint32_t indx, int value ) {  return value % 2 != 0 and indx < 5; };
+        CHECK(simlinq::SkipWhile<uint32_t>(oneEven, condition) == std::vector<int>({6, 7, 8}));
+        
+        std::vector<int> noEven { 1, 3, 5, 7 };
+        CHECK(simlinq::SkipWhile<uint32_t>(noEven, condition) == std::vector<int>());
+    }
     
     TEST(Take)
     {
