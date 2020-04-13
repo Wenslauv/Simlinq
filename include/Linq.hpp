@@ -533,13 +533,61 @@ namespace simlinq {
         return result;
     }
     
-//OrderBy<TSource,TKey>(IEnumerable<TSource>, Func<TSource,TKey>, IComparer<TKey>)
-//Sorts the elements of a sequence in ascending order by using a specified comparer.
-//OrderByDescending<TSource,TKey>(IEnumerable<TSource>, Func<TSource,TKey>)
-//Sorts the elements of a sequence in descending order according to a key.
-//OrderByDescending<TSource,TKey>(IEnumerable<TSource>, Func<TSource,TKey>, IComparer<TKey>)
-//Sorts the elements of a sequence in descending order by using a specified comparer.
+    
+    /*
+        Sorts the elements of a sequence in ascending order by using a specified comparer.
+     */
+    template<typename container, typename predicate, typename comparer>
+    auto OrderBy(const container& src, predicate&& key_func, comparer&& compare) {
+        container result(std::begin(src), std::end(src));
+        
+        auto final_comparer = [&key_func, &compare]
+        (const auto& lhv, const auto& rhv)
+        { return compare(key_func(lhv),key_func(rhv)); };
+        std::sort(std::begin(result),
+                  std::end(result),
+                  final_comparer);
+        
+        return result;
+    }
+    
+    
+    /*
+        Sorts the elements of a sequence in descending order according to a key.
+     */
+    template<typename container, typename predicate>
+    auto OrderByDescending(const container& src, predicate&& key_func) {
+        container result(std::begin(src), std::end(src));
+        
+        auto comparer = [&key_func]
+                        (const auto& l, const auto& r)
+                        { return key_func(l) > key_func(r); };
+        std::sort(std::begin(result),
+                  std::end(result),
+                  comparer);
+        
+        return result;
+    }
 
+    
+    /*
+        Sorts the elements of a sequence in descending order by using a specified comparer.
+     */
+    template<typename container, typename predicate, typename comparer>
+    auto OrderByDescending(const container& src, predicate&& key_func, comparer&& compare) {
+        container result(std::begin(src), std::end(src));
+        
+        auto final_comparer = [&key_func, &compare]
+        (const auto& lhv, const auto& rhv)
+        { return not compare(key_func(lhv),key_func(rhv)); };
+        std::sort(std::begin(result),
+                  std::end(result),
+                  final_comparer);
+        
+        return result;
+    }
+
+    
     /*
         Adds a value to the beginning of the sequence.
     */
@@ -677,11 +725,35 @@ namespace simlinq {
                                trans);
     }
 
-
-//TakeWhile<TSource>(IEnumerable<TSource>, Func<TSource,Boolean>)
-//Returns elements from a sequence as long as a specified condition is true.
-//TakeWhile<TSource>(IEnumerable<TSource>, Func<TSource,Int32,Boolean>)
-//Returns elements from a sequence as long as a specified condition is true. The element's index is used in the logic of the predicate function.
+    
+    /*
+        Returns elements from a sequence as long as a specified condition is true.
+     */
+    template<typename container, typename condition>
+    auto TakeWhile(const container& src, condition&& cond) {
+        auto it = std::begin(src);
+        while (it != std::end(src) and cond(*it))
+            it++;
+        
+        return container(std::begin(src), it);
+    }
+    
+    
+    /*
+        Returns elements from a sequence as long as a specified condition is true. The element's index is used in the logic of the predicate function.
+     */
+    template<typename index_t, typename container, typename condition>
+    auto TakeWhile(const container& src, condition&& cond) {
+        auto it = std::begin(src);
+        index_t index = 0;
+        while (it != std::end(src) and cond(index, *it)) {
+            it++;
+            index++;
+        }
+        
+        return container(std::begin(src), it);
+    }
+    
 //ThenBy<TSource,TKey>(IOrderedEnumerable<TSource>, Func<TSource,TKey>)
 //Performs a subsequent ordering of the elements in a sequence in ascending order according to a key.
 //ThenBy<TSource,TKey>(IOrderedEnumerable<TSource>, Func<TSource,TKey>, IComparer<TKey>)

@@ -98,33 +98,65 @@ SUITE(GeneratingMethods) {
         }
     }
     
+    
+    /* OrderBy required data */
+    struct S {
+        std::string name;
+        int age;
+    };
+    
+    using S_collection = std::vector<S>;
+       
+    auto compare_collections = [](const S_collection& lhv, const S_collection& rhv) {
+        if (std::size(lhv) != std::size(rhv))
+            return false;
+        
+        for (int i = 0; i < std::size(lhv); ++i) {
+            if ((lhv[i].name != rhv[i].name) or (lhv[i].age != rhv[i].age))
+                return false;
+        }
+        
+        return true;
+    };
+    
+    
     TEST(OrderBy)
     {
-        struct S {
-            std::string name;
-            int age;
-        };
-            
-        using storage = std::vector<S>;
-        
-        auto compare = [](const std::vector<S>& l, const std::vector<S>& r) {
-            if (std::size(l) != std::size(r))
-                return false;
-            
-            for (int i = 0; i < std::size(l); ++i) {
-                if ((l[i].name != r[i].name) or (l[i].age != r[i].age))
-                    return false;
-            }
-            
-            return true;
-        };
-
-        
-        storage data{ {"C", 10}, {"A", 15 }, {"B", 20 } };
-        storage expected{  {"A", 15 }, {"B", 20 }, {"C", 10} };
+        S_collection data{ {"C", 10}, {"A", 15 }, {"B", 20 } };
+        S_collection expected{  {"A", 15 }, {"B", 20 }, {"C", 10} };
         
         auto key = [](const S& s) { return s.name; };
-        CHECK_EQUAL(compare(simlinq::OrderBy(data, key), expected), true);
+        CHECK_EQUAL(compare_collections(simlinq::OrderBy(data, key), expected), true);
+    }
+    
+    TEST(OrderByComparer)
+    {
+        S_collection data{ {"C", 10}, {"A", 15 }, {"B", 20 } };
+        S_collection expected{ {"B", 20 }, { "A", 15 }, {"C", 10} };
+        
+        auto key = [](const S& s) { return s.age; };
+        auto compare = [](const int& lhv, const int& rhv) { return lhv > rhv; };
+          
+        CHECK_EQUAL(compare_collections(simlinq::OrderBy(data, key, compare), expected), true);
+    }
+    
+    TEST(OrderByDescending)
+    {
+        S_collection data{ {"C", 10}, {"A", 15 }, {"B", 20 } };
+        S_collection expected{ {"C", 10}, {"B", 20 }, {"A", 15 }};
+        
+        auto key = [](const S& s) { return s.name; };
+        CHECK_EQUAL(compare_collections(simlinq::OrderByDescending(data, key), expected), true);
+    }
+    
+    TEST(OrderByDescendingComparer)
+    {
+        S_collection data{ {"C", 10}, {"A", 15 }, {"B", 20 } };
+        S_collection expected{ {"B", 20 }, { "A", 15 }, {"C", 10} };
+        
+        auto key = [](const S& s) { return s.age; };
+        auto compare = [](const int& lhv, const int& rhv) { return lhv < rhv; };
+        CHECK_EQUAL(compare_collections(simlinq::OrderByDescending(data, key, compare), expected), true);
     }
     
     TEST(Repeat)
@@ -172,6 +204,23 @@ SUITE(GeneratingMethods) {
         CHECK(simlinq::Take<2>(first) != empty);
     }
     
+    TEST(TakeWhile)
+    {
+        std::vector<int> data{ 1,2,3,4,5};
+        
+        CHECK(simlinq::TakeWhile(data, [](int v)
+                                 { return v < 4;}) == std::vector<int>({ 1, 2, 3}));
+        CHECK(simlinq::TakeWhile(data, [](int v)
+        { return v < 10;}) == data);
+    }
+    
+    TEST(TakeWhileIndexed)
+    {
+        std::vector<int> data{ 1, 2, 3, 4, 5};
+        
+        CHECK(simlinq::TakeWhile<uint32_t>(data, [](uint32_t idx, int value){ return idx < 4 and value < 3; } ) == std::vector<int>({1,2}));
+        CHECK(simlinq::TakeWhile<uint32_t>(data, [](uint32_t idx, int value) { return idx > 5 and value < 3; }) == std::vector<int>());
+    }
     
     TEST(Union)
     {
@@ -221,3 +270,4 @@ SUITE(GeneratingMethods) {
         CHECK(zip == std::vector<std::string>({ "1 : first", "2 : second", "3 : third" }));
     }
 }
+
